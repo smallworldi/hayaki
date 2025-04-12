@@ -35,7 +35,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle('Пользователь забанен')
-      .setColor('Red')
+      .setColor('#000000')
       .addFields(
         { name: 'Пользователь:', value: `${target.tag} \`${target.id}\``, inline: false },
         { name: 'Модератор:', value: `${interaction.user.tag} \`${interaction.user.id}\``, inline: false },
