@@ -9,7 +9,10 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers
-  ]
+  ],
+  presence: {
+    status: 'dnd'
+  }
 });
 
 client.commands = new Collection();
