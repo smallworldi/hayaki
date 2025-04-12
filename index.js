@@ -15,17 +15,17 @@ const client = new Client({
 client.commands = new Collection();
 const prefix = '!';
 
-// Carrega comandos da pasta /commands
+
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
-  if (command.data) client.commands.set(command.data.name, command); // Slash
-  if (command.name) client.commands.set(command.name, command);      // Prefixo
+  if (command.data) client.commands.set(command.data.name, command); // 
+  if (command.name) client.commands.set(command.name, command);      // 
 }
 
-// Evento para comandos slash
+
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -40,7 +40,7 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-// Evento para comandos prefixados (!comando)
+
 client.on(Events.MessageCreate, async message => {
   if (message.author.bot || !message.content.startsWith(prefix)) return;
 
