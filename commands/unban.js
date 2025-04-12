@@ -27,8 +27,16 @@ module.exports = {
         title: '✅ Пользователь разблокирован',
         color: 0x000000,
         fields: [
-          { name: 'Пользователь', value: `${userId}`, inline: true },
-          { name: 'Модератор', value: `${message.author.id}`, inline: true }
+          {
+            name: 'Пользователь',
+            value: `${bannedUser.user.username} ${bannedUser.user.id}`,
+            inline: true
+          },
+          {
+            name: 'Модератор',
+            value: `${message.author.username} ${message.author.id}`,
+            inline: true
+          }
         ]
       };
 
