@@ -51,6 +51,11 @@ client.on(Events.InteractionCreate, async interaction => {
     };
     await interaction.update({ embeds: [englishEmbed], components: [getLanguageButtons()] });
   } else if (interaction.customId === 'create_voice') {
+    const member = await interaction.guild.members.fetch(interaction.user.id);
+    if (member.voice.channelId !== '1359954764598612089') {
+      return interaction.reply({ content: 'You need to join the "➕・create" channel first!', ephemeral: true });
+    }
+    
     await interaction.reply('Please enter a name for your voice channel:');
     
     const filter = m => m.author.id === interaction.user.id;
