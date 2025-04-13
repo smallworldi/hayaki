@@ -70,23 +70,6 @@ client.on(Events.InteractionCreate, async interaction => {
         }
 
         try {
-          const voiceChannel = await interaction.guild.channels.create({
-            name: channelName,
-            type: 2,
-            userLimit: userLimit,
-            parent: '1359954462680027276',
-            permissionOverwrites: [
-              {
-                id: interaction.user.id,
-                allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Connect]
-              },
-              {
-                id: interaction.guild.id,
-                deny: [PermissionFlagsBits.Connect]
-              }
-            ]
-          });
-
           // Watch for the user joining the setup channel
           const setupHandler = async (oldState, newState) => {
             if (newState.member.id === interaction.user.id && newState.channelId === '1359954764598612089') {
