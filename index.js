@@ -76,13 +76,6 @@ client.on(Events.InteractionCreate, async interaction => {
         }
 
         try {
-          const joinEmbed = new EmbedBuilder()
-            .setTitle('✅ Channel Setup')
-            .setDescription(`Please join the "➕・create" channel to create your private channel "${channelName}"`)
-            .setColor('#000000');
-
-          await interaction.followUp({ embeds: [joinEmbed] });
-
           // Watch for the user joining the setup channel
           const setupHandler = async (oldState, newState) => {
             if (newState.member.id === interaction.user.id && newState.channelId === '1359954764598612089') {
