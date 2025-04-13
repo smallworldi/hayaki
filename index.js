@@ -1,7 +1,9 @@
-const { Client, GatewayIntentBits, Collection, Events, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionsBitField, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
+
+
 
 const client = new Client({
   intents: [
@@ -26,6 +28,8 @@ for (const file of commandFiles) {
   if (command.data) client.commands.set(command.data.name, command);
   if (command.name) client.commands.set(command.name, command);
 }
+
+const recentMessages = new Map();
 
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isButton()) return;
@@ -52,8 +56,55 @@ client.on(Events.InteractionCreate, async interaction => {
 client.on(Events.MessageCreate, async message => {
   if (message.author.bot) return;
 
-  if (message.mentions.has(client.user)) {
+  const userId = message.author.id;
+  const now = Date.now();
+  const content = message.content.toLowerCase();
 
+  const invitesRegex = /(discord\.gg\/|discord\.com\/invite\/)/;
+  const linksRegex = /https?:\/\/|www\./;
+
+  if (invitesRegex.test(content) || linksRegex.test(content)) {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+      await message.delete().catch(() => {});
+      const warn = await message.channel.send(`${message.author}, ссылки запрещены!`);
+      setTimeout(() => warn.delete().catch(() => {}), 3000);
+      return;
+    }
+  }
+
+  if (!recentMessages.has(userId)) {
+    recentMessages.set(userId, []);
+  }
+
+  const userMessages = recentMessages.get(userId);
+  userMessages.push({ content: message.content, timestamp: now });
+
+  const filtered = userMessages.filter(msg => now - msg.timestamp < 5000);
+  recentMessages.set(userId, filtered);
+
+  const repeatedMessages = filtered.filter(m => m.content === message.content);
+
+  if (repeatedMessages.length >= 3 || filtered.length >= 6) {
+    await message.delete().catch(() => {});
+
+    const member = message.member;
+
+    if (member.moderatable) {
+      try {
+        await member.timeout(5 * 60 * 1000, 'Автоматическое мутирование за спам/флуд');
+        const warn = await message.channel.send(`${member} был автоматически замучен на 5 минут за спам/флуд.`);
+        setTimeout(() => warn.delete().catch(() => {}), 3000);
+      } catch (err) {
+        console.error('Ошибка при попытке замутить:', err);
+      }
+    } else {
+      const warn = await message.channel.send(`Не удалось замутить ${member}. У бота нет прав.`);
+      setTimeout(() => warn.delete().catch(() => {}), 3000);
+    }
+    return;
+  }
+
+  if (message.mentions.has(client.user)) {
     const russianEmbed = {
       title: '🤖 Информация о боте',
       description: 'Этот бот является **приватным административным ботом** сервера.\nОн поддерживает только команды для модерации (бан, мут, таймаут и т.п.).',
@@ -68,7 +119,7 @@ client.on(Events.MessageCreate, async message => {
       footer: { text: 'Click 🇷🇺 to view the Russian version' }
     };
 
-    const sentMessage = await message.channel.send({
+    await message.channel.send({
       embeds: [russianEmbed],
       components: [getLanguageButtons()]
     });
@@ -107,3 +158,5 @@ function getLanguageButtons() {
       .setStyle(ButtonStyle.Secondary)
   );
 }
+
+require('./server');

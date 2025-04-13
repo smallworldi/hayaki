@@ -1,86 +1,64 @@
-const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('ban')
-    .setDescription('Банит пользователя с сервера.')
-    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
-    .addUserOption(option =>
-      option.setName('пользователь')
-        .setDescription('Пользователь для бана')
-        .setRequired(true))
-    .addStringOption(option =>
-      option.setName('причина')
-        .setDescription('Причина бана')
-        .setRequired(false)),
-
-  // Slash-команда (ban real)
-  async execute(interaction) {
-    const target = interaction.options.getUser('пользователь');
-    const reason = interaction.options.getString('причина') || '**не указана**';
-
-    const member = await interaction.guild.members.fetch(target.id).catch(() => null);
-
-    if (!member) {
-      return interaction.reply({ content: 'Не удалось найти пользователя на сервере.', ephemeral: true });
-    }
-
-    if (!member.bannable) {
-      return interaction.reply({ content: 'Я не могу забанить этого пользователя.', ephemeral: true });
-    }
-
-    await member.ban({ reason }).catch(err => {
-      return interaction.reply({ content: 'Произошла ошибка при попытке забанить пользователя.', ephemeral: true });
-    });
-
-    const embed = new EmbedBuilder()
-      .setTitle('Пользователь забанен')
-      .setColor('#000000')
-      .addFields(
-        { name: 'Пользователь:', value: `${target.tag} \`${target.id}\``, inline: false },
-        { name: 'Модератор:', value: `${interaction.user.tag} \`${interaction.user.id}\``, inline: false },
-        { name: 'Причина:', value: reason, inline: false }
-      )
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed] });
-  },
-
-  // Префикс-команда (!ban) — ban real
-  async prefixExecute(message, args) {
-    if (!message.member.permissions.has(PermissionFlagsBits.BanMembers)) {
+  name: 'clear',
+  description: 'Удалить сообщения на канале.',
+  async execute(message, args) {
+    if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
       return message.reply('У вас нет прав для использования этой команды.');
     }
 
-    const userArg = args[0];
-    const reason = args.slice(1).join(' ') || '**не указана**';
+    const quantity = parseInt(args[0]);
 
-    if (!userArg) return message.reply('Вы должны упомянуть пользователя или указать его ID.');
-
-    let member;
-    try {
-      member = await message.guild.members.fetch(userArg.replace(/[<@!>]/g, '')).catch(() => null);
-    } catch {
-      return message.reply('Не удалось найти пользователя.');
+    if (isNaN(quantity) || quantity < 1 || quantity > 100) {
+      return message.reply('Пожалуйста, укажите количество сообщений от 1 до 100.');
     }
 
-    if (!member) return message.reply('Пользователь не найден.');
-    if (!member.bannable) return message.reply('Я не могу забанить этого пользователя.');
+    const user = message.mentions.users.first();
 
-    await member.ban({ reason }).catch(() => {
-      return message.reply('Произошла ошибка при попытке забанить пользователя.');
-    });
+    try {
+      if (user) {
+        const messages = await message.channel.messages.fetch({ limit: quantity });
+        const userMessages = messages.filter(msg => msg.author.id === user.id);
 
-    const embed = new EmbedBuilder()
-      .setTitle('Пользователь забанен')
-      .setColor('Red')
-      .addFields(
-        { name: 'Пользователь:', value: `${member.user.tag} \`${member.user.id}\``, inline: false },
-        { name: 'Модератор:', value: `${message.author.tag} \`${message.author.id}\``, inline: false },
-        { name: 'Причина:', value: reason, inline: false }
-      )
-      .setTimestamp();
+        if (userMessages.size === 0) {
+          return message.reply('Не найдено сообщений для удаления от этого пользователя.');
+        }
 
-    await message.channel.send({ embeds: [embed] });
+        await message.channel.bulkDelete(userMessages, true);
+        const embed = new EmbedBuilder()
+          .setTitle('Удалено сообщений от пользователя')
+          .setColor('#000000')
+          .addFields(
+            { name: 'Пользователь:', value: `${user.tag} \`${user.id}\``, inline: false },
+            { name: 'Модератор:', value: `${message.author.tag} \`${message.author.id}\``, inline: false },
+            { name: 'Удалено сообщений:', value: `${userMessages.size}`, inline: false }
+          )
+          .setTimestamp();
+
+        await message.channel.send({ embeds: [embed] });
+      } else {
+        const messages = await message.channel.messages.fetch({ limit: quantity });
+
+        if (messages.size === 0) {
+          return message.reply('Не найдено сообщений для удаления.');
+        }
+
+        await message.channel.bulkDelete(messages, true);
+        const embed = new EmbedBuilder()
+          .setTitle('Удалено сообщений')
+          .setColor('Red')
+          .addFields(
+            { name: 'Модератор:', value: `${message.author.tag} \`${message.author.id}\``, inline: false },
+            { name: 'Удалено сообщений:', value: `${messages.size}`, inline: false }
+          )
+          .setTimestamp();
+
+        await message.channel.send({ embeds: [embed] });
+      }
+    } catch (err) {
+      console.error(err);
+      return message.reply('Произошла ошибка при попытке удалить сообщения.');
+    }
   }
 };
