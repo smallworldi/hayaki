@@ -50,6 +50,79 @@ client.on(Events.InteractionCreate, async interaction => {
       footer: { text: 'Click 🇷🇺 to view the Russian version' }
     };
     await interaction.update({ embeds: [englishEmbed], components: [getLanguageButtons()] });
+  } else if (interaction.customId === 'create_voice') {
+    await interaction.reply('Please enter a name for your voice channel:');
+    
+    const filter = m => m.author.id === interaction.user.id;
+    const collector = interaction.channel.createMessageCollector({ filter, time: 30000, max: 1 });
+    
+    collector.on('collect', async nameMsg => {
+      const channelName = nameMsg.content;
+      await interaction.followUp('Please specify the user limit (number):');
+      
+      const limitCollector = interaction.channel.createMessageCollector({ filter, max: 1, time: 30000 });
+      
+      limitCollector.on('collect', async limitMsg => {
+        const userLimit = parseInt(limitMsg.content);
+        
+        if (isNaN(userLimit) || userLimit < 1 || userLimit > 99) {
+          return interaction.followUp('Invalid user limit. Please try again.');
+        }
+
+        try {
+          const voiceChannel = await interaction.guild.channels.create({
+            name: channelName,
+            type: 2,
+            userLimit: userLimit,
+            parent: '1359954462680027276',
+            permissionOverwrites: [
+              {
+                id: interaction.user.id,
+                allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Connect]
+              },
+              {
+                id: interaction.guild.id,
+                deny: [PermissionFlagsBits.Connect]
+              }
+            ]
+          });
+
+          const tempChannel = await interaction.guild.channels.create({
+            name: 'create call',
+            type: 2,
+            parent: '1359954462680027276'
+          });
+
+          const successEmbed = new EmbedBuilder()
+            .setTitle('✅ Channel Created')
+            .setDescription(`Your private channel "${channelName}" has been created!\nUser limit: ${userLimit}\nPlease join the temporary "create call" channel to complete setup.`)
+            .setColor('#000000');
+
+          await interaction.followUp({ embeds: [successEmbed] });
+
+          // Delete temporary channel if owner doesn't join within 1 minute
+          setTimeout(async () => {
+            if (tempChannel) await tempChannel.delete().catch(() => {});
+          }, 60000);
+
+          // Watch for the owner joining/leaving voice channels
+          const voiceStateHandler = async (oldState, newState) => {
+            if (oldState.member.id === interaction.user.id) {
+              if (oldState.channel?.id === voiceChannel.id && !newState.channel) {
+                // Owner left the channel, delete it
+                await voiceChannel.delete().catch(() => {});
+                client.off('voiceStateUpdate', voiceStateHandler);
+              }
+            }
+          };
+
+          client.on('voiceStateUpdate', voiceStateHandler);
+        } catch (error) {
+          console.error(error);
+          await interaction.followUp('An error occurred while creating the channel.');
+        }
+      });
+    });
   }
 });
 
