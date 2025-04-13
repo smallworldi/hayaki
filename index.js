@@ -87,13 +87,6 @@ client.on(Events.InteractionCreate, async interaction => {
             ]
           });
 
-          const successEmbed = new EmbedBuilder()
-            .setTitle('✅ Join Voice Channel')
-            .setDescription(`Please join the voice channel to create your private channel "${channelName}"`)
-            .setColor('#000000');
-
-          await interaction.followUp({ embeds: [successEmbed] });
-
           // Watch for the user joining the setup channel
           const setupHandler = async (oldState, newState) => {
             if (newState.member.id === interaction.user.id && newState.channelId === '1359954764598612089') {
