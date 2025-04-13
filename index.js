@@ -87,11 +87,50 @@ client.on(Events.InteractionCreate, async interaction => {
             ]
           });
 
-          const tempChannel = await interaction.guild.channels.create({
-            name: 'create call',
-            type: 2,
-            parent: '1359954462680027276'
-          });
+          const successEmbed = new EmbedBuilder()
+            .setTitle('✅ Join Voice Channel')
+            .setDescription(`Please join the voice channel to create your private channel "${channelName}"`)
+            .setColor('#000000');
+
+          await interaction.followUp({ embeds: [successEmbed] });
+
+          // Watch for the user joining the setup channel
+          const setupHandler = async (oldState, newState) => {
+            if (newState.member.id === interaction.user.id && newState.channelId === '1359954764598612089') {
+              const voiceChannel = await interaction.guild.channels.create({
+                name: channelName,
+                type: 2,
+                userLimit: userLimit,
+                parent: '1359954462680027276',
+                permissionOverwrites: [
+                  {
+                    id: interaction.user.id,
+                    allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Connect]
+                  },
+                  {
+                    id: interaction.guild.id,
+                    deny: [PermissionFlagsBits.Connect]
+                  }
+                ]
+              });
+
+              // Move user to their new channel
+              await newState.setChannel(voiceChannel);
+              client.off('voiceStateUpdate', setupHandler);
+
+              // Watch for user leaving their channel
+              const leaveHandler = async (oldState, newState) => {
+                if (oldState.member.id === interaction.user.id && oldState.channelId === voiceChannel.id) {
+                  await voiceChannel.delete().catch(() => {});
+                  client.off('voiceStateUpdate', leaveHandler);
+                }
+              };
+              
+              client.on('voiceStateUpdate', leaveHandler);
+            }
+          };
+
+          client.on('voiceStateUpdate', setupHandler);
 
           const successEmbed = new EmbedBuilder()
             .setTitle('✅ Channel Created')
@@ -100,23 +139,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
           await interaction.followUp({ embeds: [successEmbed] });
 
-          // Delete temporary channel if owner doesn't join within 1 minute
-          setTimeout(async () => {
-            if (tempChannel) await tempChannel.delete().catch(() => {});
-          }, 60000);
-
-          // Watch for the owner joining/leaving voice channels
-          const voiceStateHandler = async (oldState, newState) => {
-            if (oldState.member.id === interaction.user.id) {
-              if (oldState.channel?.id === voiceChannel.id && !newState.channel) {
-                // Owner left the channel, delete it
-                await voiceChannel.delete().catch(() => {});
-                client.off('voiceStateUpdate', voiceStateHandler);
-              }
-            }
-          };
-
-          client.on('voiceStateUpdate', voiceStateHandler);
+          
         } catch (error) {
           console.error(error);
           await interaction.followUp('An error occurred while creating the channel.');
