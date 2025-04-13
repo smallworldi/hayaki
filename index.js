@@ -77,9 +77,43 @@ client.on(Events.InteractionCreate, async interaction => {
 
         try {
           // Watch for the user joining the setup channel
-          const setupHandler = async (oldState, newState) => {
-            if (newState.member.id === interaction.user.id && newState.channelId === '1359954764598612089') {
-              const voiceChannel = await interaction.guild.channels.create({
+          const voiceChannel = await interaction.guild.channels.create({
+                name: channelName,
+                type: 2,
+                userLimit: userLimit,
+                parent: '1359954462680027276',
+                permissionOverwrites: [
+                  {
+                    id: interaction.user.id,
+                    allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Connect]
+                  },
+                  {
+                    id: interaction.guild.id,
+                    deny: [PermissionFlagsBits.Connect]
+                  }
+                ]
+          });
+
+          // Move user to their new channel
+          const member = await interaction.guild.members.fetch(interaction.user.id);
+          await member.voice.setChannel(voiceChannel);
+
+          // Watch for user leaving their channel
+          const leaveHandler = async (oldState, newState) => {
+            if (oldState.member.id === interaction.user.id && oldState.channelId === voiceChannel.id) {
+              await voiceChannel.delete().catch(() => {});
+              client.off('voiceStateUpdate', leaveHandler);
+            }
+          };
+              
+          client.on('voiceStateUpdate', leaveHandler);
+
+          const successEmbed = new EmbedBuilder()
+            .setTitle('✅ Channel Created')
+            .setDescription(`Your private channel "${channelName}" has been created!\nUser limit: ${userLimit}`)
+            .setColor('#000000');
+
+          await interaction.followUp({ embeds: [successEmbed] });
                 name: channelName,
                 type: 2,
                 userLimit: userLimit,
@@ -112,7 +146,7 @@ client.on(Events.InteractionCreate, async interaction => {
             }
           };
 
-          client.on('voiceStateUpdate', setupHandler);
+          
 
           
 
