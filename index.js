@@ -114,37 +114,6 @@ client.on(Events.InteractionCreate, async interaction => {
             .setColor('#000000');
 
           await interaction.followUp({ embeds: [successEmbed] });
-                name: channelName,
-                type: 2,
-                userLimit: userLimit,
-                parent: '1359954462680027276',
-                permissionOverwrites: [
-                  {
-                    id: interaction.user.id,
-                    allow: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.Connect]
-                  },
-                  {
-                    id: interaction.guild.id,
-                    deny: [PermissionFlagsBits.Connect]
-                  }
-                ]
-              });
-
-              // Move user to their new channel
-              await newState.setChannel(voiceChannel);
-              client.off('voiceStateUpdate', setupHandler);
-
-              // Watch for user leaving their channel
-              const leaveHandler = async (oldState, newState) => {
-                if (oldState.member.id === interaction.user.id && oldState.channelId === voiceChannel.id) {
-                  await voiceChannel.delete().catch(() => {});
-                  client.off('voiceStateUpdate', leaveHandler);
-                }
-              };
-              
-              client.on('voiceStateUpdate', leaveHandler);
-            }
-          };
 
           
 
