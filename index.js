@@ -104,7 +104,7 @@ client.on(Events.MessageCreate, async message => {
     return;
   }
 
-  if (message.mentions.has(client.user)) {
+  if (message.mentions.has(client.user) && message.content.trim() === `<@${client.user.id}>`) {
     const russianEmbed = {
       title: '🤖 Информация о боте',
       description: 'Этот бот является **приватным административным ботом** сервера.\nОн поддерживает только команды для модерации (бан, мут, таймаут и т.п.).',
