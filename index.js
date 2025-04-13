@@ -75,6 +75,12 @@ client.on(Events.InteractionCreate, async interaction => {
           return interaction.followUp('Invalid user limit. Please try again.');
         }
 
+        // Delete user messages and bot responses
+        await nameMsg.delete().catch(() => {});
+        await limitMsg.delete().catch(() => {});
+        await interaction.deleteReply().catch(() => {});
+        await interaction.followUp('Please specify the user limit (number):').then(msg => msg.delete().catch(() => {}));
+
         try {
           // Watch for the user joining the setup channel
           const voiceChannel = await interaction.guild.channels.create({
@@ -110,7 +116,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
           const successEmbed = new EmbedBuilder()
             .setTitle('✅ Channel Created')
-            .setDescription(`Your private channel "${channelName}" has been created!\nUser limit: ${userLimit}`)
+            .setDescription(`Your private channel \`${channelName}\` has been created!\nUser limit: \`${userLimit}\``)
             .setColor('#000000');
 
           await interaction.followUp({ embeds: [successEmbed] });
