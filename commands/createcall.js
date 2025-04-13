@@ -3,22 +3,22 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFl
 
 module.exports = {
   name: 'createcall',
-  description: 'Exibir embed para criação de calls privadas',
+  description: 'Display embed for creating private voice channels',
   async prefixExecute(message, args) {
     if (!message.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
-      return message.reply('Você não tem permissão para usar este comando.');
+      return message.reply('You do not have permission to use this command.');
     }
 
     const embed = new EmbedBuilder()
-      .setTitle('🎮 Criar Call Privada')
-      .setDescription('Clique no botão abaixo para criar sua call privada')
+      .setTitle('🎮 Create Private Call')
+      .setDescription('Click the button below to create your private voice channel')
       .setColor('#000000');
 
     const button = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
           .setCustomId('create_voice')
-          .setLabel('Criar')
+          .setLabel('Create')
           .setStyle(ButtonStyle.Primary)
       );
 
