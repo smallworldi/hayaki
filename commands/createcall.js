@@ -19,7 +19,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('create_voice')
           .setLabel('Create')
-          .setStyle(ButtonStyle.Primary)
+          .setStyle(ButtonStyle.Secondary)
       );
 
     await message.channel.send({
