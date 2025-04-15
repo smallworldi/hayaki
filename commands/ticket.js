@@ -149,7 +149,7 @@ module.exports = {
             new ButtonBuilder()
               .setCustomId('open_ticket')
               .setLabel('Open Ticket')
-              .setStyle(ButtonStyle.Primary)
+              .setStyle(ButtonStyle.Secondary)
               .setEmoji('<:ticket:1361814668435521608>')
           );
 
