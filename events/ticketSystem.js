@@ -162,7 +162,7 @@ module.exports = {
     if (interaction.isModalSubmit() && interaction.customId === 'ticket_modal') {
       const motive = interaction.fields.getTextInputValue('motive');
       const thread = await interaction.channel.threads.create({
-        name: `• ${interaction.user.username} —— ${interaction.user.id}`,
+        name: ${interaction.user.username} — ${interaction.user.id}`,
         autoArchiveDuration: 60,
         reason: 'Ticket created',
         type: 12
