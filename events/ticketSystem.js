@@ -54,16 +54,10 @@ messages.reverse().forEach(msg => {
 });
 
 const logChannel = interaction.guild.channels.cache.get('1361137563632533614');
-
-const now = new Date();
-const formattedDate = `(${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')})`;
-
-const fileName = `${formattedDate} - ticket - ${interaction.user.username} - ${interaction.user.id}.txt`;
-
 await logChannel.send({
   files: [{
     attachment: Buffer.from(transcript),
-    name: fileName
+    name: `ticket-${thread.name}.txt`
   }]
 });
 
