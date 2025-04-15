@@ -3,14 +3,13 @@ const { Events } = require('discord.js');
 module.exports = {
   name: Events.GuildMemberAdd,
   async execute(member) {
-    const accountAgeLimit = 7 * 24 * 60 * 60 * 1000; // 7 dias em milissegundos
+    const accountAgeLimit = 7 * 24 * 60 * 60 * 1000; 
     const createdAt = member.user.createdAt;
     const now = Date.now();
 
-    // IDs dos cargos e do canal
-    const borderChannelId = 'ID_DO_CANAL_BORDER'; // Substitua pelo ID real do canal
-    const temporaryRoleId = '1361193838151991407'; // Cargo temporário
-    const approvedRoleId = '1343021729533919434';  // Cargo aprovado
+    const borderChannelId = '1361193318855344240'; 
+    const temporaryRoleId = '1361193838151991407'; 
+    const approvedRoleId = '1343021729533919434';  
 
     if (now - createdAt.getTime() < accountAgeLimit) {
       try {
@@ -32,7 +31,6 @@ module.exports = {
         console.error('Ошибка при назначении временной роли:', error);
       }
     } else {
-      // Se a conta for mais antiga que 7 dias, já pode dar o cargo de aprovado
       try {
         await member.roles.add(approvedRoleId);
       } catch (error) {
