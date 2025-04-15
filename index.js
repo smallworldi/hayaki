@@ -260,7 +260,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
           client.on('voiceStateUpdate', leaveHandler);
 
-          const successEmbed = new Client.EmbedBuilder()
+          const successEmbed = new EmbedBuilder()
             .setTitle(' Channel Created')
             .setDescription(`Your private channel \`${channelName}\` has been created!\nUser limit: \`${userLimit}\``)
             .setColor('#000000');
