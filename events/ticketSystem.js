@@ -47,19 +47,25 @@ module.exports = {
 
         const thread = interaction.channel;
         const messages = await thread.messages.fetch();
-        let transcript = '';
+let transcript = '';
 
-        messages.reverse().forEach(msg => {
-          transcript += `${msg.author.tag} (${msg.author.id}): ${msg.content}\n`;
-        });
+messages.reverse().forEach(msg => {
+  transcript += `${msg.author.tag} (${msg.author.id}): ${msg.content}\n`;
+});
 
-        const logChannel = interaction.guild.channels.cache.get('1361833707090088086');
-        await logChannel.send({
-          files: [{
-            attachment: Buffer.from(transcript),
-            name: `ticket-${thread.name}.txt`
-          }]
-        });
+const logChannel = interaction.guild.channels.cache.get('1361137563632533614');
+
+const now = new Date();
+const formattedDate = `(${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')})`;
+
+const fileName = `${formattedDate} - ticket - ${interaction.user.username} - ${interaction.user.id}.txt`;
+
+await logChannel.send({
+  files: [{
+    attachment: Buffer.from(transcript),
+    name: fileName
+  }]
+});
 
         await thread.delete();
       }
