@@ -32,7 +32,7 @@ module.exports = {
 
       if (interaction.customId === 'close_ticket') {
         const thread = interaction.channel;
-        await thread.send('Ticket closed');
+        await thread.send('<:lock:1361816276896448552> Ticket closed');
         await thread.setLocked(true);
         await interaction.reply({ content: 'The ticket has been closed.' }); // Not ephemeral
       }
@@ -47,19 +47,19 @@ module.exports = {
 
         const thread = interaction.channel;
         const messages = await thread.messages.fetch();
-let transcript = '';
+        let transcript = '';
 
-messages.reverse().forEach(msg => {
-  transcript += `${msg.author.tag} (${msg.author.id}): ${msg.content}\n`;
-});
+        messages.reverse().forEach(msg => {
+          transcript += `${msg.author.tag} (${msg.author.id}): ${msg.content}\n`;
+        });
 
-const logChannel = interaction.guild.channels.cache.get('1361137563632533614');
-await logChannel.send({
-  files: [{
-    attachment: Buffer.from(transcript),
-    name: `ticket-${thread.name}.txt`
-  }]
-});
+        const logChannel = interaction.guild.channels.cache.get('1361137563632533614');
+        await logChannel.send({
+          files: [{
+            attachment: Buffer.from(transcript),
+            name: `ticket-${thread.name}.txt`
+          }]
+        });
 
         await thread.delete();
       }
@@ -118,7 +118,7 @@ await logChannel.send({
             { name: 'Claimed by', value: `${interaction.user.tag}` },
             oldEmbed.fields[1]
           )
-          .setColor('#9a46ca');
+          .setColor('#00ff00');
 
         await firstMessage.edit({
           content: firstMessage.content,
@@ -143,7 +143,7 @@ await logChannel.send({
           if (now < expirationTime) {
             const remaining = Math.ceil((expirationTime - now) / 1000);
             return interaction.reply({
-              content: `Please wait ${Math.floor(remaining / 60)}m ${remaining % 60}s before calling staff again.`,
+              content: `⏳ Please wait ${Math.floor(remaining / 60)}m ${remaining % 60}s before calling staff again.`,
               ephemeral: true
             });
           }
@@ -162,7 +162,7 @@ await logChannel.send({
     if (interaction.isModalSubmit() && interaction.customId === 'ticket_modal') {
       const motive = interaction.fields.getTextInputValue('motive');
       const thread = await interaction.channel.threads.create({
-        name: ${interaction.user.username} — ${interaction.user.id}`,
+        name: `${interaction.user.username}-${interaction.user.id}`,
         autoArchiveDuration: 60,
         reason: 'Ticket created',
         type: 12
@@ -192,7 +192,7 @@ await logChannel.send({
       );
 
       await thread.send({
-        content: `${interaction.user} <@&1347292617070739663>`,
+        content: `${interaction.user}`,
         embeds: [embed],
         components: [initialButtons]
       });
