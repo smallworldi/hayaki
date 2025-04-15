@@ -23,7 +23,7 @@ module.exports = {
 
         Once you have configured everything, click **"Send Ticket"** to make the system live! <:ticket:1361814668435521608>
 
-        -# Don't forget: **You can update the settings anytime!**
+        - # Don't forget: **You can update the settings anytime!**
       `)
       .setColor('#454545'); // Neutral color for configuration message
 
