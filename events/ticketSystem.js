@@ -118,7 +118,7 @@ module.exports = {
             { name: 'Claimed by', value: `${interaction.user.tag}` },
             oldEmbed.fields[1]
           )
-          .setColor('#00ff00');
+          .setColor('#9a46ca');
 
         await firstMessage.edit({
           content: firstMessage.content,
