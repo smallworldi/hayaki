@@ -32,7 +32,7 @@ module.exports = {
 
       if (interaction.customId === 'close_ticket') {
         const thread = interaction.channel;
-        await thread.send('<:lock:1361816276896448552> Ticket closed');
+        await thread.send('Ticket closed');
         await thread.setLocked(true);
         await interaction.reply({ content: 'The ticket has been closed.' }); // Not ephemeral
       }
