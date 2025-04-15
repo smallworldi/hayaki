@@ -13,22 +13,38 @@ module.exports = {
       return message.reply('Пожалуйста, укажите пользователя для бана.');
     }
 
+    if (member.roles.highest.position >= message.member.roles.highest.position) {
+      return message.reply('Вы не можете забанить пользователя с равной или более высокой ролью.');
+    }
+
     if (!member.bannable) {
       return message.reply('Я не могу забанить этого пользователя.');
     }
 
+    // Pega o motivo a partir do argumento (remove a menção do array)
+    const reason = args.slice(1).join(' ') || 'Не указано'; // "Не указано" = "Não Informado"
+
     try {
-      await member.ban();
+      await member.ban({ reason });
+
       const embed = new EmbedBuilder()
         .setTitle('Пользователь забанен')
         .setColor('#000000')
         .addFields(
           { name: 'Пользователь:', value: `${member.user.tag} \`${member.user.id}\``, inline: false },
-          { name: 'Модератор:', value: `${message.author.tag} \`${message.author.id}\``, inline: false }
+          { name: 'Модератор:', value: `${message.author.tag} \`${message.author.id}\``, inline: false },
+          { name: 'Причина:', value: reason, inline: false }
         )
         .setTimestamp();
 
       await message.channel.send({ embeds: [embed] });
+
+
+      const logChannel = message.guild.channels.cache.get('1344024905250771005');
+      if (logChannel) {
+        await logChannel.send({ embeds: [embed] });
+      }
+
     } catch (err) {
       console.error(err);
       return message.reply('Произошла ошибка при попытке забанить пользователя.');
