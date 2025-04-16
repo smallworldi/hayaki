@@ -6,10 +6,11 @@ db.serialize(() => {
   db.run(`
     CREATE TABLE IF NOT EXISTS balances (
       user_id TEXT PRIMARY KEY,
-      balance INTEGER DEFAULT 1000
+      wallet INTEGER DEFAULT 1000,
+      bank INTEGER DEFAULT 0
     )
   `);
-  
+
   db.run(`
     CREATE TABLE IF NOT EXISTS cooldowns (
       user_id TEXT,
@@ -20,30 +21,34 @@ db.serialize(() => {
   `);
 });
 
-// Obter saldo (e criar se não existir)
-function getBalance(userId) {
+// Obter saldo (cria se não existir)
+function getUserEconomy(userId) {
   return new Promise((resolve, reject) => {
-    db.get('SELECT balance FROM balances WHERE user_id = ?', [userId], (err, row) => {
+    db.get('SELECT wallet, bank FROM balances WHERE user_id = ?', [userId], (err, row) => {
       if (err) return reject(err);
-      if (row) return resolve(row.balance);
+      if (row) return resolve(row);
 
-      // Cria novo usuário com saldo inicial
-      db.run('INSERT INTO balances (user_id, balance) VALUES (?, ?)', [userId, 1000], (err) => {
-        if (err) return reject(err);
-        resolve(1000);
-      });
+      // Cria novo usuário
+      db.run(
+        'INSERT INTO balances (user_id, wallet, bank) VALUES (?, ?, ?)',
+        [userId, 1000, 0],
+        (err) => {
+          if (err) return reject(err);
+          resolve({ wallet: 1000, bank: 0 });
+        }
+      );
     });
   });
 }
 
-// Atualizar saldo
-function updateBalance(userId, newBalance) {
+// Atualiza wallet e/ou bank
+function updateUserEconomy(userId, wallet, bank) {
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO balances (user_id, balance)
-       VALUES (?, ?)
-       ON CONFLICT(user_id) DO UPDATE SET balance = ?`,
-      [userId, newBalance, newBalance],
+      `INSERT INTO balances (user_id, wallet, bank)
+       VALUES (?, ?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET wallet = ?, bank = ?`,
+      [userId, wallet, bank, wallet, bank],
       (err) => {
         if (err) return reject(err);
         resolve();
@@ -52,21 +57,16 @@ function updateBalance(userId, newBalance) {
   });
 }
 
-// Obter cooldown de um comando
+// Cooldowns
 function getCooldown(userId, command) {
   return new Promise((resolve, reject) => {
-    db.get(
-      'SELECT last_used FROM cooldowns WHERE user_id = ? AND command = ?',
-      [userId, command],
-      (err, row) => {
-        if (err) return reject(err);
-        resolve(row ? row.last_used : 0);
-      }
-    );
+    db.get('SELECT last_used FROM cooldowns WHERE user_id = ? AND command = ?', [userId, command], (err, row) => {
+      if (err) return reject(err);
+      resolve(row ? row.last_used : 0);
+    });
   });
 }
 
-// Atualizar cooldown de um comando
 function setCooldown(userId, command, timestamp) {
   return new Promise((resolve, reject) => {
     db.run(
@@ -83,8 +83,8 @@ function setCooldown(userId, command, timestamp) {
 }
 
 module.exports = {
-  getBalance,
-  updateBalance,
+  getUserEconomy,
+  updateUserEconomy,
   getCooldown,
   setCooldown
 };
