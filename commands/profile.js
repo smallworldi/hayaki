@@ -1,5 +1,5 @@
 const { createCanvas, loadImage } = require('canvas');
-const { getUserFullProfile } = require('../database');
+const { getUserProfile } = require('../database');
 const path = require('path');
 const fs = require('fs');
 
@@ -8,7 +8,7 @@ module.exports = {
   aliases: ['profile'],
   async prefixExecute(message) {
     const user = message.mentions.users.first() || message.author;
-    const profile = await getUserFullProfile(user.id);
+const profile = await getUserProfile(user.id);
 
     // Cria o canvas
     const canvas = createCanvas(1024, 576);
