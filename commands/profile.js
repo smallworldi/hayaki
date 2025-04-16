@@ -40,21 +40,22 @@ module.exports = {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 300, 1024, 276);
 
+    // Casamento
+    if (profile.married_with) {
+      const targetUser = await message.client.users.fetch(profile.married_with);
+      ctx.fillStyle = '#bca5ef';
+      ctx.beginPath();
+      ctx.moveTo(0, 300);
+      ctx.lineTo(300, 300);
+      ctx.lineTo(270, 330);
+      ctx.lineTo(0, 330);
+      ctx.closePath();
+      ctx.fill();
 
-if (profile.married_with) {
-  ctx.fillStyle = '#bca5ef';
-  ctx.beginPath();
-  ctx.moveTo(0, 300);
-  ctx.lineTo(300, 300);
-  ctx.lineTo(270, 330);
-  ctx.lineTo(0, 330);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 20px Arial';
-  ctx.fillText(`casado(a): ${profile.married_with}`, 10, 322);
-}
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText(`Casado(a) com: ${targetUser.username}`, 10, 322);
+    }
 
     ctx.font = '22px Arial';
     ctx.fillStyle = '#fff';
