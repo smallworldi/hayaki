@@ -26,21 +26,11 @@ db.serialize(() => {
       xp INTEGER DEFAULT 0,
       level INTEGER DEFAULT 1,
       bio TEXT DEFAULT '',
-      background TEXT DEFAULT ''
+      background TEXT DEFAULT '',
+      married_with TEXT DEFAULT '',
+      badges TEXT DEFAULT ''
     )
-  `, () => {
-    // Verificar e adicionar coluna 'badges' se não existir
-    db.all("PRAGMA table_info(user_profiles)", (err, columns) => {
-      if (err) return console.error('Erro ao verificar colunas:', err);
-
-      const hasBadges = columns.some(col => col.name === 'badges');
-      if (!hasBadges) {
-        db.run(`ALTER TABLE user_profiles ADD COLUMN badges TEXT DEFAULT ''`, (err) => {
-          if (err) console.error('Erro ao adicionar coluna badges:', err.message);
-        });
-      }
-    });
-  });
+  `);
 
   db.run(`
     CREATE TABLE IF NOT EXISTS xp_leaderboard (
@@ -51,9 +41,16 @@ db.serialize(() => {
       PRIMARY KEY (user_id, guild_id)
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS marriages (
+      user_id TEXT PRIMARY KEY,
+      partner_id TEXT
+    )
+  `);
 });
 
-// Funções de saldo
+// Saldo
 function getUser(userId) {
   return new Promise((resolve, reject) => {
     db.get('SELECT wallet, bank FROM balances WHERE user_id = ?', [userId], (err, row) => {
@@ -87,43 +84,45 @@ function updateUser(userId, user) {
   });
 }
 
-// Perfil de usuário
+// Perfil
 function getUserProfile(userId) {
   return new Promise((resolve, reject) => {
-    db.get('SELECT xp, level, bio, background, badges FROM user_profiles WHERE user_id = ?', [userId], (err, row) => {
+    db.get('SELECT xp, level, bio, background, married_with, badges FROM user_profiles WHERE user_id = ?', [userId], (err, row) => {
       if (err) return reject(err);
       if (row) return resolve(row);
 
       db.run(
-        'INSERT INTO user_profiles (user_id, xp, level, bio, background, badges) VALUES (?, ?, ?, ?, ?, ?)',
-        [userId, 0, 1, '', '', ''],
+        'INSERT INTO user_profiles (user_id, xp, level, bio, background, married_with, badges) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, 0, 1, '', '', '', ''],
         (err) => {
           if (err) return reject(err);
-          resolve({ xp: 0, level: 1, bio: '', background: '', badges: '' });
+          resolve({ xp: 0, level: 1, bio: '', background: '', married_with: '', badges: '' });
         }
       );
     });
   });
 }
 
-function updateUserProfile(userId, userProfile) {
+function updateUserProfile(userId, profile) {
   return new Promise((resolve, reject) => {
     db.run(
-      `INSERT INTO user_profiles (user_id, xp, level, bio, background, badges)
-       VALUES (?, ?, ?, ?, ?, ?)
-       ON CONFLICT(user_id) DO UPDATE SET xp = ?, level = ?, bio = ?, background = ?, badges = ?`,
+      `INSERT INTO user_profiles (user_id, xp, level, bio, background, married_with, badges)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET xp = ?, level = ?, bio = ?, background = ?, married_with = ?, badges = ?`,
       [
         userId,
-        userProfile.xp,
-        userProfile.level,
-        userProfile.bio,
-        userProfile.background,
-        userProfile.badges,
-        userProfile.xp,
-        userProfile.level,
-        userProfile.bio,
-        userProfile.background,
-        userProfile.badges
+        profile.xp,
+        profile.level,
+        profile.bio,
+        profile.background,
+        profile.married_with,
+        profile.badges,
+        profile.xp,
+        profile.level,
+        profile.bio,
+        profile.background,
+        profile.married_with,
+        profile.badges
       ],
       (err) => {
         if (err) return reject(err);
@@ -133,7 +132,32 @@ function updateUserProfile(userId, userProfile) {
   });
 }
 
-// Leaderboard
+// Casamento
+function getMarriage(userId) {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT partner_id FROM marriages WHERE user_id = ?', [userId], (err, row) => {
+      if (err) return reject(err);
+      resolve(row ? row.partner_id : null);
+    });
+  });
+}
+
+function setMarriage(userId, partnerId) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO marriages (user_id, partner_id)
+       VALUES (?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET partner_id = ?`,
+      [userId, partnerId, partnerId],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+}
+
+// XP leaderboard
 function getXPLeaderboard(guildId) {
   return new Promise((resolve, reject) => {
     db.all('SELECT user_id, xp, level FROM xp_leaderboard WHERE guild_id = ? ORDER BY xp DESC', [guildId], (err, rows) => {
@@ -158,7 +182,7 @@ function updateXPLeaderboard(userId, guildId, xp, level) {
   });
 }
 
-// Cooldowns
+// Cooldown
 function getCooldown(userId, command) {
   return new Promise((resolve, reject) => {
     db.get('SELECT last_used FROM cooldowns WHERE user_id = ? AND command = ?', [userId, command], (err, row) => {
@@ -183,7 +207,28 @@ function setCooldown(userId, command, timestamp) {
   });
 }
 
-// Exportar tudo
+// Perfil completo (saldo + perfil + casado)
+async function getUserFullProfile(userId) {
+  const [user, profile] = await Promise.all([getUser(userId), getUserProfile(userId)]);
+  return {
+    ...user,
+    ...profile,
+    xp_goal: profile.level * 500
+  };
+}
+
+// Ranking de dinheiro real (wallet + bank)
+function getMoneyRank(userId) {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT user_id, (wallet + bank) as total FROM balances ORDER BY total DESC', (err, rows) => {
+      if (err) return reject(err);
+      const rank = rows.findIndex(row => row.user_id === userId);
+      resolve(rank === -1 ? null : rank + 1);
+    });
+  });
+}
+
+// Exportação
 module.exports = {
   getUser,
   updateUser,
@@ -192,5 +237,9 @@ module.exports = {
   getXPLeaderboard,
   updateXPLeaderboard,
   getCooldown,
-  setCooldown
+  setCooldown,
+  getUserFullProfile,
+  getMoneyRank,
+  getMarriage,
+  setMarriage
 };
