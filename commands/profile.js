@@ -33,15 +33,20 @@ module.exports = {
       ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     }
 
-    // Foto de perfil
-    const avatar = await loadImage(message.author.displayAvatarURL({ format: 'png', size: 256 }));
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(100, 100, 50, 0, Math.PI * 2); // Criar um círculo para a foto de perfil
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(avatar, 50, 50, 100, 100); // Desenha a foto de perfil
-    ctx.restore();
+    let avatarURL = message.author.displayAvatarURL({ extension: 'png', size: 256 });
+
+try {
+  const avatar = await loadImage(avatarURL);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(100, 100, 50, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(avatar, 50, 50, 100, 100);
+  ctx.restore();
+} catch (err) {
+  console.error('Erro ao carregar avatar:', err);
+}
 
     // Texto
     ctx.fillStyle = '#ffffff';
