@@ -14,14 +14,17 @@ module.exports = {
     const canvas = createCanvas(1024, 576);
     const ctx = canvas.getContext('2d');
 
-    // Fundo superior personalizado ou padrão
-    const bgImage = profile.background && profile.background.startsWith('http') ?
-      await loadImage(profile.background).catch(() => null) : null;
+    // Fundo superior personalizado ou fundo padrão da pasta assets/background
+    const defaultBackgroundPath = path.join(__dirname, '..', 'assets', 'background', 'background.png');
+    let bgImage;
 
-    if (bgImage) {
+    try {
+      bgImage = await loadImage(defaultBackgroundPath);
       ctx.drawImage(bgImage, 0, 0, 1024, 300);
-    } else {
-      ctx.fillStyle = '#8ad2c5'; // Cor do fundo
+    } catch (error) {
+      console.error('Erro ao carregar o fundo padrão:', error);
+      // Caso o arquivo não seja encontrado ou erro ocorra, podemos usar uma cor padrão
+      ctx.fillStyle = '#8ad2c5'; // Cor do fundo caso o arquivo não seja encontrado
       ctx.fillRect(0, 0, 1024, 300);
     }
 
@@ -29,21 +32,21 @@ module.exports = {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 300, 1024, 276);
 
-    // "CASADO COM:" (apenas se o usuário estiver casado)
-    if (profile.married_with) {
-      ctx.fillStyle = '#bca5ef';
-      ctx.beginPath();
-      ctx.moveTo(0, 300);
-      ctx.lineTo(200, 300);
-      ctx.lineTo(170, 330);
-      ctx.lineTo(0, 330);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px Arial';
-      ctx.fillText('CASADO COM:', 10, 322);
+    // "CASADO COM:"
+    ctx.fillStyle = '#bca5ef';
+    ctx.beginPath();
+    ctx.moveTo(0, 300);
+    ctx.lineTo(200, 300);
+    ctx.lineTo(170, 330);
+    ctx.lineTo(0, 330);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText('CASADO COM:', 10, 322);
 
-      // Nome do cônjuge
+    // Nome do cônjuge (Se houver)
+    if (profile.married_with) {
       ctx.font = '18px Arial';
       ctx.fillText(profile.married_with, 10, 345);
     }
