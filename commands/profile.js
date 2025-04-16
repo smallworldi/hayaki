@@ -54,7 +54,7 @@ module.exports = {
 
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 20px Arial';
-      ctx.fillText(`Casado(a) com: ${targetUser.username}`, 10, 322);
+      ctx.fillText(`Casado(a): ${targetUser.username}`, 10, 322);
     }
 
     ctx.font = '22px Arial';
