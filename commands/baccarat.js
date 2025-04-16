@@ -19,6 +19,10 @@ module.exports = {
     }
 
 const { getUser, updateUser } = require('../database');
+const { wallet: userBalance } = await getUser(message.author.id); // Fixed this line
+if (userBalance < amount) {
+  return message.reply('❌ Insufficient balance!');
+}
 let { wallet } = await getUser(message.author.id);
     if (userBalance < amount) {
       return message.reply('❌ Insufficient balance!');
