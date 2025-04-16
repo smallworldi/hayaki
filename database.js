@@ -28,7 +28,7 @@ function getUser(userId) {
       if (err) return reject(err);
       if (row) return resolve(row);
 
-      // Cria novo usuário
+      // Cria novo usuário se não existir
       db.run(
         'INSERT INTO balances (user_id, wallet, bank) VALUES (?, ?, ?)',
         [userId, 1000, 0],
@@ -42,13 +42,13 @@ function getUser(userId) {
 }
 
 // Atualiza wallet e/ou bank
-function updateUser(userId, wallet, bank) {
+function updateUser(userId, user) {
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO balances (user_id, wallet, bank)
        VALUES (?, ?, ?)
        ON CONFLICT(user_id) DO UPDATE SET wallet = ?, bank = ?`,
-      [userId, wallet, bank, wallet, bank],
+      [userId, user.wallet, user.bank, user.wallet, user.bank],
       (err) => {
         if (err) return reject(err);
         resolve();
@@ -82,6 +82,7 @@ function setCooldown(userId, command, timestamp) {
   });
 }
 
+// Exportando com nomes usados nos comandos
 module.exports = {
   getUser,
   updateUser,
