@@ -22,7 +22,7 @@ db.serialize(() => {
 });
 
 // Obter saldo (cria se não existir)
-function getUserEconomy(userId) {
+function getUser(userId) {
   return new Promise((resolve, reject) => {
     db.get('SELECT wallet, bank FROM balances WHERE user_id = ?', [userId], (err, row) => {
       if (err) return reject(err);
@@ -42,7 +42,7 @@ function getUserEconomy(userId) {
 }
 
 // Atualiza wallet e/ou bank
-function updateUserEconomy(userId, wallet, bank) {
+function updateUser(userId, wallet, bank) {
   return new Promise((resolve, reject) => {
     db.run(
       `INSERT INTO balances (user_id, wallet, bank)
@@ -83,8 +83,8 @@ function setCooldown(userId, command, timestamp) {
 }
 
 module.exports = {
-  getUserEconomy,
-  updateUserEconomy,
+  getUser,
+  updateUser,
   getCooldown,
   setCooldown
 };
