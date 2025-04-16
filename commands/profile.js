@@ -1,5 +1,5 @@
 const { createCanvas, loadImage } = require('canvas');
-const { getUserProfile } = require('../database');
+const { getUserFullProfile } = require('../database'); // Mudado para pegar todos os dados completos
 const path = require('path');
 const fs = require('fs');
 
@@ -8,7 +8,7 @@ module.exports = {
   aliases: ['profile'],
   async prefixExecute(message) {
     const user = message.mentions.users.first() || message.author;
-const profile = await getUserProfile(user.id);
+    const profile = await getUserFullProfile(user.id);  // Carregando perfil completo
 
     // Cria o canvas
     const canvas = createCanvas(1024, 576);
@@ -21,7 +21,7 @@ const profile = await getUserProfile(user.id);
     if (bgImage) {
       ctx.drawImage(bgImage, 0, 0, 1024, 300);
     } else {
-      ctx.fillStyle = '#8ad2c5';
+      ctx.fillStyle = '#8ad2c5'; // Cor do fundo
       ctx.fillRect(0, 0, 1024, 300);
     }
 
@@ -42,7 +42,7 @@ const profile = await getUserProfile(user.id);
     ctx.font = 'bold 20px Arial';
     ctx.fillText('CASADO COM:', 10, 322);
 
-    // Nome do cônjuge
+    // Nome do cônjuge (Se houver)
     if (profile.married_with) {
       ctx.font = '18px Arial';
       ctx.fillText(profile.married_with, 10, 345);
@@ -54,22 +54,26 @@ const profile = await getUserProfile(user.id);
     ctx.fillText(`NOME`, 20, 380);
     ctx.fillText(user.username, 20, 405);
 
+    // ID do usuário
     ctx.fillText(`ID`, 20, 435);
     ctx.fillText(user.id, 20, 460);
 
+    // Saldo
     ctx.fillText(`SALDO`, 20, 490);
     ctx.fillText(`$${profile.wallet || 0}`, 20, 515);
 
+    // XP e Meta
     ctx.fillText(`XP/META`, 20, 545);
-    ctx.fillText(`${profile.xp}/${profile.xp_goal}`, 20, 570);
+    ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
     // Level
     ctx.fillText('LEVEL', 820, 380);
     ctx.fillText(profile.level.toString(), 820, 405);
 
-    // Ranking dinheiro (mocked por enquanto)
+    // Ranking Dinheiro
+    const moneyRank = await getMoneyRank(user.id);  // Função para retornar o rank de dinheiro
     ctx.fillText('RANKING DINHEIRO', 820, 440);
-    ctx.fillText('#15', 820, 465);
+    ctx.fillText(`#${moneyRank || '???'}`, 820, 465);
 
     // Badges
     ctx.fillText('BADGES', 820, 520);
@@ -78,7 +82,7 @@ const profile = await getUserProfile(user.id);
     // Biografia
     ctx.textAlign = 'center';
     ctx.font = 'italic 20px Arial';
-    ctx.fillText(profile.bio || '...', 512, 565);
+    ctx.fillText(profile.bio || 'Este usuário não tem uma biografia.', 512, 565);
 
     // Foto de perfil (círculo)
     const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
@@ -96,3 +100,10 @@ const profile = await getUserProfile(user.id);
     return message.channel.send({ files: ['./profile-card.png'] });
   }
 };
+
+// Função adicional para calcular o ranking de dinheiro
+async function getMoneyRank(userId) {
+  // Retorna o ranking baseado no saldo
+  const rank = await getMoneyRank(userId); // Aqui você pode buscar do banco se implementado
+  return rank || 'Desconhecido';  // Mocked, substitua pela lógica real
+}
