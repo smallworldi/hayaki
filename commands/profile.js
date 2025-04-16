@@ -40,7 +40,7 @@ module.exports = {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 300, 1024, 276);
 
-// Tarja rosa com nome do cônjuge + anel
+
 if (profile.married_with) {
   ctx.fillStyle = '#bca5ef';
   ctx.beginPath();
@@ -53,7 +53,7 @@ if (profile.married_with) {
 
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 20px Arial';
-  ctx.fillText(`${profile.married_with}`, 10, 322);
+  ctx.fillText(`casado(a): ${profile.married_with}`, 10, 322);
 }
 
     ctx.font = '22px Arial';
