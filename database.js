@@ -19,9 +19,29 @@ db.serialize(() => {
       PRIMARY KEY(user_id, command)
     )
   `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS user_profiles (
+      user_id TEXT PRIMARY KEY,
+      xp INTEGER DEFAULT 0,
+      level INTEGER DEFAULT 1,
+      bio TEXT DEFAULT '',
+      background TEXT DEFAULT ''
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS xp_leaderboard (
+      user_id TEXT,
+      guild_id TEXT,
+      xp INTEGER,
+      level INTEGER,
+      PRIMARY KEY (user_id, guild_id)
+    )
+  `);
 });
 
-// Obter saldo (cria se não existir)
+// Funções de saldo
 function getUser(userId) {
   return new Promise((resolve, reject) => {
     db.get('SELECT wallet, bank FROM balances WHERE user_id = ?', [userId], (err, row) => {
@@ -41,7 +61,7 @@ function getUser(userId) {
   });
 }
 
-// Atualiza wallet e/ou bank
+// Atualiza saldo de wallet e bank
 function updateUser(userId, user) {
   return new Promise((resolve, reject) => {
     db.run(
@@ -57,7 +77,67 @@ function updateUser(userId, user) {
   });
 }
 
-// Cooldowns
+// Funções de perfil do usuário
+function getUserProfile(userId) {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT xp, level, bio, background FROM user_profiles WHERE user_id = ?', [userId], (err, row) => {
+      if (err) return reject(err);
+      if (row) return resolve(row);
+
+      // Cria perfil novo se não existir
+      db.run(
+        'INSERT INTO user_profiles (user_id, xp, level, bio, background) VALUES (?, ?, ?, ?, ?)',
+        [userId, 0, 1, '', ''],
+        (err) => {
+          if (err) return reject(err);
+          resolve({ xp: 0, level: 1, bio: '', background: '' });
+        }
+      );
+    });
+  });
+}
+
+function updateUserProfile(userId, userProfile) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO user_profiles (user_id, xp, level, bio, background)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET xp = ?, level = ?, bio = ?, background = ?`,
+      [userId, userProfile.xp, userProfile.level, userProfile.bio, userProfile.background, userProfile.xp, userProfile.level, userProfile.bio, userProfile.background],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+}
+
+// Funções de XP e Ranking
+function getXPLeaderboard(guildId) {
+  return new Promise((resolve, reject) => {
+    db.all('SELECT user_id, xp, level FROM xp_leaderboard WHERE guild_id = ? ORDER BY xp DESC', [guildId], (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows);
+    });
+  });
+}
+
+function updateXPLeaderboard(userId, guildId, xp, level) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO xp_leaderboard (user_id, guild_id, xp, level)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(user_id, guild_id) DO UPDATE SET xp = ?, level = ?`,
+      [userId, guildId, xp, level, xp, level],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+}
+
+// Funções de cooldown
 function getCooldown(userId, command) {
   return new Promise((resolve, reject) => {
     db.get('SELECT last_used FROM cooldowns WHERE user_id = ? AND command = ?', [userId, command], (err, row) => {
@@ -82,10 +162,14 @@ function setCooldown(userId, command, timestamp) {
   });
 }
 
-// Exportando com nomes usados nos comandos
+// Exportando funções
 module.exports = {
   getUser,
   updateUser,
+  getUserProfile,
+  updateUserProfile,
+  getXPLeaderboard,
+  updateXPLeaderboard,
   getCooldown,
   setCooldown
 };
