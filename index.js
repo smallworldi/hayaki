@@ -1,4 +1,4 @@
-const { Client, Events, GatewayIntentBits, Collection, PermissionsBitField, EmbedBuilder } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Collection, PermissionsBitField } = require('discord.js');
 const { config } = require('dotenv');
 const fs = require('fs');
 const path = require('path');
@@ -260,7 +260,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
           client.on('voiceStateUpdate', leaveHandler);
 
-          const successEmbed = new EmbedBuilder()
+          const successEmbed = new Client.EmbedBuilder()
             .setTitle(' Channel Created')
             .setDescription(`Your private channel \`${channelName}\` has been created!\nUser limit: \`${userLimit}\``)
             .setColor('#000000');
@@ -353,10 +353,14 @@ client.on(Events.MessageCreate, async message => {
   const commandName = args.shift().toLowerCase();
 
   const command = client.commands.get(commandName);
-  if (!command || !command.prefixExecute) return;
+  if (!command) return;
 
   try {
-    await command.prefixExecute(message, args, client);
+    if (command.execute) {
+      await command.execute(message, args);
+    } else if (command.prefixExecute) {
+      await command.prefixExecute(message, args);
+    }
   } catch (error) {
     console.error(error);
     message.reply('Произошла ошибка при выполнении команды.');
