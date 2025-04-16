@@ -108,20 +108,21 @@ function updateUserProfile(userId, profile) {
     db.run(
       `INSERT INTO user_profiles (user_id, xp, level, bio, background, married_with, badges)
        VALUES (?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(user_id) DO UPDATE SET xp = ?, level = ?, bio = ?, background = ?, married_with = ?, badges = ?`,
+       ON CONFLICT(user_id) DO UPDATE SET 
+         xp = ?, level = ?, bio = ?, background = ?, married_with = ?, badges = ?`,
       [
         userId,
         profile.xp,
         profile.level,
         profile.bio,
         profile.background,
-        profile.married_with,
+        profile.married_with,  // Garantindo que 'married_with' seja atualizado corretamente
         profile.badges,
         profile.xp,
         profile.level,
         profile.bio,
         profile.background,
-        profile.married_with,
+        profile.married_with,  // Atualizando 'married_with'
         profile.badges
       ],
       (err) => {
@@ -144,7 +145,6 @@ function getMarriage(userId) {
 
 function setMarriage(userId, partnerId) {
   return new Promise((resolve, reject) => {
-    // Atualiza o casamento na tabela 'marriages'
     db.run(
       `INSERT INTO marriages (user_id, partner_id)
        VALUES (?, ?)
@@ -152,18 +152,7 @@ function setMarriage(userId, partnerId) {
       [userId, partnerId, partnerId],
       (err) => {
         if (err) return reject(err);
-
-        // Atualiza o campo 'married_with' na tabela 'user_profiles'
-        db.run(
-          `UPDATE user_profiles
-           SET married_with = ?
-           WHERE user_id = ?`,
-          [partnerId, userId],
-          (err) => {
-            if (err) return reject(err);
-            resolve();
-          }
-        );
+        resolve();
       }
     );
   });
