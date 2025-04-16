@@ -54,12 +54,15 @@ module.exports = {
         });
 
         const logChannel = interaction.guild.channels.cache.get('1361137563632533614');
-        await logChannel.send({
-          files: [{
-            attachment: Buffer.from(transcript),
-            name: `ticket-${thread.name}.txt`
-          }]
-        });
+        const { AttachmentBuilder } = require('discord.js');
+
+const buffer = Buffer.from(transcript, 'utf-8');
+const attachment = new AttachmentBuilder(buffer, { name: `ticket-${thread.name}.txt` });
+
+await logChannel.send({
+  content: `📄 Ticket transcript from ${thread.name}`,
+  files: [attachment]
+});
 
         await thread.delete();
       }
