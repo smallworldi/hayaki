@@ -183,8 +183,9 @@ module.exports = {
       winnings = (bet === 'tie') ? amount * 8 : amount; // Tie bet wins 8x, otherwise return the original bet
     }
 
-    userBalance += winnings;
-    await updateBalance(message.author.id, userBalance);
+    userBalance -= amount;
+userBalance += winnings;
+await updateBalance(message.author.id, userBalance);
 
     embed.setTitle('Baccarat - Game Over!')
       .setColor(winnings > amount ? '#454545' : (winnings === amount ? '#FFFFFF' : '#9a46ca'))
