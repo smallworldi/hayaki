@@ -1,28 +1,33 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUser, updateUser } = require('../database');
+const {
+  getUserEconomy,
+  updateUserEconomy,
+  getCooldown,
+  setCooldown
+} = require('../database');
 
-const COOLDOWN_TIME = 86400000; // 24 hours in milliseconds
+const COOLDOWN_TIME = 86400000; // 24h em milissegundos
 
 module.exports = {
   name: 'daily',
   description: 'Claim your daily reward.',
   async prefixExecute(message) {
-    const user = getUser(message.author.id);
+    const userId = message.author.id;
     const now = Date.now();
 
-
-    if (now - user.lastDaily < COOLDOWN_TIME) {
-      const timeLeft = COOLDOWN_TIME - (now - user.lastDaily);
+    const lastUsed = await getCooldown(userId, 'daily');
+    if (now - lastUsed < COOLDOWN_TIME) {
+      const timeLeft = COOLDOWN_TIME - (now - lastUsed);
       const hoursLeft = Math.ceil(timeLeft / 3600000);
       return message.reply(`You've already claimed your daily reward. Try again in ${hoursLeft} hour(s).`);
     }
 
-
     const amount = 500;
-    user.wallet += amount;
-    user.lastDaily = now;
-    updateUser(message.author.id, user);
+    const userData = await getUserEconomy(userId);
+    const newWallet = userData.wallet + amount;
 
+    await updateUserEconomy(userId, newWallet, userData.bank);
+    await setCooldown(userId, 'daily', now);
 
     const embed = new EmbedBuilder()
       .setColor('#9a46ca')
