@@ -1,75 +1,98 @@
 const { createCanvas, loadImage } = require('canvas');
-const { getUserProfile, getXPLeaderboard } = require('../database');
-const { AttachmentBuilder } = require('discord.js');
+const { getUserFullProfile } = require('../database');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = {
   name: 'perfil',
-  description: 'Exibe o perfil do usuário em forma de card de imagem.',
-  async execute(message) {
-    const userId = message.author.id;
-    const guildId = message.guild.id;
+  aliases: ['profile'],
+  async prefixExecute(message) {
+    const user = message.mentions.users.first() || message.author;
+    const profile = await getUserFullProfile(user.id);
 
-    // Obtém o perfil do usuário
-    const userProfile = await getUserProfile(userId);
-
-    // Obtém o ranking de XP no servidor
-    const leaderboard = await getXPLeaderboard(guildId);
-    const userRank = leaderboard.findIndex(entry => entry.user_id === userId) + 1 || 'N/A';
-
-    // Calcula a meta XP (nível baseado em XP)
-    const nextLevelXP = (userProfile.level * 1000); // Exemplo de cálculo de meta XP (ex.: 1000 XP por nível)
-
-    // Criar a imagem do card
-    const canvas = createCanvas(700, 400);
+    // Cria o canvas
+    const canvas = createCanvas(1024, 576);
     const ctx = canvas.getContext('2d');
 
-    // Fundo
-    ctx.fillStyle = '#2b2d31'; // Fundo escuro
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Fundo superior personalizado ou padrão
+    const bgImage = profile.background && profile.background.startsWith('http') ?
+      await loadImage(profile.background).catch(() => null) : null;
 
-    // Carregar fundo personalizado
-    if (userProfile.background) {
-      const backgroundImage = await loadImage(userProfile.background);
-      ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    if (bgImage) {
+      ctx.drawImage(bgImage, 0, 0, 1024, 300);
+    } else {
+      ctx.fillStyle = '#8ad2c5';
+      ctx.fillRect(0, 0, 1024, 300);
     }
 
-    let avatarURL = message.author.displayAvatarURL({ extension: 'png', size: 256 });
+    // Fundo inferior preto
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 300, 1024, 276);
 
-try {
-  const avatar = await loadImage(avatarURL);
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(100, 100, 50, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.clip();
-  ctx.drawImage(avatar, 50, 50, 100, 100);
-  ctx.restore();
-} catch (err) {
-  console.error('Erro ao carregar avatar:', err);
-}
+    // "CASADO COM:"
+    ctx.fillStyle = '#bca5ef';
+    ctx.beginPath();
+    ctx.moveTo(0, 300);
+    ctx.lineTo(200, 300);
+    ctx.lineTo(170, 330);
+    ctx.lineTo(0, 330);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText('CASADO COM:', 10, 322);
 
-    // Texto
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '28px sans-serif';
-    ctx.fillText(message.author.username, 160, 80); // Nome de usuário
+    // Nome do cônjuge
+    if (profile.married_with) {
+      ctx.font = '18px Arial';
+      ctx.fillText(profile.married_with, 10, 345);
+    }
 
-    ctx.font = '20px sans-serif';
-    ctx.fillText(`ID: ${message.author.id}`, 160, 120);
-    ctx.fillText(`Ranking de XP: #${userRank}`, 160, 160);
-    ctx.fillText(`XP Atual: ${userProfile.xp} / ${nextLevelXP}`, 160, 200);
-    ctx.fillText(`Meta XP: ${nextLevelXP} XP`, 160, 240);
+    // Nome do usuário
+    ctx.font = '22px Arial';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`NOME`, 20, 380);
+    ctx.fillText(user.username, 20, 405);
 
-    ctx.font = '18px sans-serif';
-    ctx.fillText('Biografia:', 160, 280);
-    ctx.fillText(userProfile.bio || 'Sem biografia definida.', 160, 310);
+    ctx.fillText(`ID`, 20, 435);
+    ctx.fillText(user.id, 20, 460);
 
-    // Gerar o buffer da imagem
+    ctx.fillText(`SALDO`, 20, 490);
+    ctx.fillText(`$${profile.wallet || 0}`, 20, 515);
+
+    ctx.fillText(`XP/META`, 20, 545);
+    ctx.fillText(`${profile.xp}/${profile.xp_goal}`, 20, 570);
+
+    // Level
+    ctx.fillText('LEVEL', 820, 380);
+    ctx.fillText(profile.level.toString(), 820, 405);
+
+    // Ranking dinheiro (mocked por enquanto)
+    ctx.fillText('RANKING DINHEIRO', 820, 440);
+    ctx.fillText('#15', 820, 465);
+
+    // Badges
+    ctx.fillText('BADGES', 820, 520);
+    ctx.fillText(profile.badges || 'Nenhuma', 820, 545);
+
+    // Biografia
+    ctx.textAlign = 'center';
+    ctx.font = 'italic 20px Arial';
+    ctx.fillText(profile.bio || '...', 512, 565);
+
+    // Foto de perfil (círculo)
+    const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(512, 300, 100, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(avatar, 412, 200, 200, 200);
+    ctx.restore();
+
+    // Enviar imagem
     const buffer = canvas.toBuffer('image/png');
-
-    // Criar o anexo com a imagem
-    const attachment = new AttachmentBuilder(buffer, { name: 'perfil-card.png' });
-
-    // Enviar a imagem do card como resposta
-    message.reply({ files: [attachment] });
+    fs.writeFileSync('./profile-card.png', buffer);
+    return message.channel.send({ files: ['./profile-card.png'] });
   }
 };
