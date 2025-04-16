@@ -12,12 +12,12 @@ module.exports = {
 
     const spouseName = profile.married_with;
 
-    // Encontrar o usuário pelo nome salvo (se possível)
+
     const spouseUser = message.guild.members.cache.find(
       member => member.user.username === spouseName
     );
 
-    // Limpa o casamento nos dois perfis
+
     await updateUserProfile(message.author.id, { married_with: null });
 
     if (spouseUser) {
