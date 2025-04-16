@@ -1,32 +1,90 @@
-const { EmbedBuilder } = require('discord.js');
-const { getBalance, updateBalance, getCooldown, setCooldown } = require('../database');
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('./economy.db');
 
-const COOLDOWN_TIME = 86400000; // 24h
+// Criação das tabelas
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS balances (
+      user_id TEXT PRIMARY KEY,
+      balance INTEGER DEFAULT 1000
+    )
+  `);
+  
+  db.run(`
+    CREATE TABLE IF NOT EXISTS cooldowns (
+      user_id TEXT,
+      command TEXT,
+      last_used INTEGER,
+      PRIMARY KEY(user_id, command)
+    )
+  `);
+});
+
+// Obter saldo (e criar se não existir)
+function getBalance(userId) {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT balance FROM balances WHERE user_id = ?', [userId], (err, row) => {
+      if (err) return reject(err);
+      if (row) return resolve(row.balance);
+
+      // Cria novo usuário com saldo inicial
+      db.run('INSERT INTO balances (user_id, balance) VALUES (?, ?)', [userId, 1000], (err) => {
+        if (err) return reject(err);
+        resolve(1000);
+      });
+    });
+  });
+}
+
+// Atualizar saldo
+function updateBalance(userId, newBalance) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO balances (user_id, balance)
+       VALUES (?, ?)
+       ON CONFLICT(user_id) DO UPDATE SET balance = ?`,
+      [userId, newBalance, newBalance],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+}
+
+// Obter cooldown de um comando
+function getCooldown(userId, command) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      'SELECT last_used FROM cooldowns WHERE user_id = ? AND command = ?',
+      [userId, command],
+      (err, row) => {
+        if (err) return reject(err);
+        resolve(row ? row.last_used : 0);
+      }
+    );
+  });
+}
+
+// Atualizar cooldown de um comando
+function setCooldown(userId, command, timestamp) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO cooldowns (user_id, command, last_used)
+       VALUES (?, ?, ?)
+       ON CONFLICT(user_id, command) DO UPDATE SET last_used = ?`,
+      [userId, command, timestamp, timestamp],
+      (err) => {
+        if (err) return reject(err);
+        resolve();
+      }
+    );
+  });
+}
 
 module.exports = {
-  name: 'daily',
-  description: 'Claim your daily reward.',
-  async prefixExecute(message) {
-    const userId = message.author.id;
-    const now = Date.now();
-
-    const lastUsed = await getCooldown(userId, 'daily');
-    if (now - lastUsed < COOLDOWN_TIME) {
-      const timeLeft = COOLDOWN_TIME - (now - lastUsed);
-      const hoursLeft = Math.ceil(timeLeft / 3600000);
-      return message.reply(`You've already claimed your daily reward. Try again in ${hoursLeft} hour(s).`);
-    }
-
-    const amount = 500;
-    const currentBalance = await getBalance(userId);
-    await updateBalance(userId, currentBalance + amount);
-    await setCooldown(userId, 'daily', now);
-
-    const embed = new EmbedBuilder()
-      .setColor('#9a46ca')
-      .setTitle('Daily Claimed')
-      .setDescription(`You received ${amount} Synths.`);
-
-    message.reply({ embeds: [embed] });
-  }
+  getBalance,
+  updateBalance,
+  getCooldown,
+  setCooldown
 };
