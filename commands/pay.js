@@ -16,8 +16,8 @@ module.exports = {
       return message.reply('Enter a valid amount.');
     }
 
-    const sender = getUser(message.author.id);
-    const receiver = getUser(member.id);
+    const sender = await getUser(message.author.id);
+    const receiver = await getUser(member.id);
 
     if (sender.wallet < amount) {
       return message.reply('You do not have enough funds.');
@@ -25,8 +25,9 @@ module.exports = {
 
     sender.wallet -= amount;
     receiver.wallet += amount;
-    updateUser(message.author.id, sender);
-    updateUser(member.id, receiver);
+
+    await updateUser(message.author.id, sender);
+    await updateUser(member.id, receiver);
 
     const embed = new EmbedBuilder()
       .setColor('#9a46ca')
