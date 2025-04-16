@@ -1,18 +1,18 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUser, updateUser } = require('../database');
+const { getUserEconomy, updateUserEconomy } = require('../database');
 
 module.exports = {
   name: 'rob',
   description: 'Attempt to rob another user.',
   async prefixExecute(message, args) {
     const target = message.mentions.members.first();
-    const thief = getUser(message.author.id);
+    const thief = await getUserEconomy(message.author.id);
 
     if (!target || target.id === message.author.id || target.user.bot) {
       return message.reply('Mention a valid user to rob.');
     }
 
-    const victim = getUser(target.id);
+    const victim = await getUserEconomy(target.id);
 
     if (victim.wallet < 100) {
       return message.reply('That user has too little money to rob.');
@@ -22,10 +22,11 @@ module.exports = {
 
     if (success) {
       const amount = Math.floor(Math.random() * (victim.wallet * 0.3)) + 50;
-      thief.wallet += amount;
-      victim.wallet -= amount;
-      updateUser(message.author.id, thief);
-      updateUser(target.id, victim);
+      const newThiefWallet = thief.wallet + amount;
+      const newVictimWallet = victim.wallet - amount;
+      
+      await updateUserEconomy(message.author.id, newThiefWallet, thief.bank);
+      await updateUserEconomy(target.id, newVictimWallet, victim.bank);
 
       const embed = new EmbedBuilder()
         .setColor('#9a46ca')
@@ -35,8 +36,9 @@ module.exports = {
       message.reply({ embeds: [embed] });
     } else {
       const penalty = Math.floor(thief.wallet * 0.2);
-      thief.wallet -= penalty;
-      updateUser(message.author.id, thief);
+      const newThiefWallet = thief.wallet - penalty;
+      
+      await updateUserEconomy(message.author.id, newThiefWallet, thief.bank);
 
       const embed = new EmbedBuilder()
         .setColor('#9a46ca')
