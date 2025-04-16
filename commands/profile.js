@@ -1,5 +1,5 @@
 const { createCanvas, loadImage } = require('canvas');
-const { getUserFullProfile } = require('../database'); // Mudado para pegar todos os dados completos
+const { getUserFullProfile, getMoneyRank } = require('../database'); // Corrigido para usar uma função real
 const path = require('path');
 const fs = require('fs');
 
@@ -73,7 +73,7 @@ module.exports = {
     // Ranking Dinheiro
     const moneyRank = await getMoneyRank(user.id);  // Função para retornar o rank de dinheiro
     ctx.fillText('RANKING DINHEIRO', 820, 440);
-    ctx.fillText(`#${moneyRank || '???'}`, 820, 465);
+    ctx.fillText(`#${moneyRank || 'Desconhecido'}`, 820, 465);
 
     // Badges
     ctx.fillText('BADGES', 820, 520);
@@ -100,10 +100,3 @@ module.exports = {
     return message.channel.send({ files: ['./profile-card.png'] });
   }
 };
-
-// Função adicional para calcular o ranking de dinheiro
-async function getMoneyRank(userId) {
-  // Retorna o ranking baseado no saldo
-  const rank = await getMoneyRank(userId); // Aqui você pode buscar do banco se implementado
-  return rank || 'Desconhecido';  // Mocked, substitua pela lógica real
-}
