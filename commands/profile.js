@@ -21,20 +21,19 @@ module.exports = {
     if (profile.background && profile.background.startsWith('http')) {
       try {
         bgImage = await loadImage(profile.background);
-        ctx.drawImage(bgImage, 0, 0, 1024, 300);  // Desenha fundo personalizado
+        ctx.drawImage(bgImage, 0, 0, 1024, 300);  // Fundo personalizado
       } catch (error) {
         console.error('Erro ao carregar fundo personalizado:', error);
-        bgImage = null;  // Se o fundo personalizado falhar, usa o fundo padrão
+        bgImage = null;
       }
     }
 
     if (!bgImage) {
       try {
-        bgImage = await loadImage(defaultBackgroundPath);  // Tenta carregar o fundo padrão
+        bgImage = await loadImage(defaultBackgroundPath);
         ctx.drawImage(bgImage, 0, 0, 1024, 300);
       } catch (error) {
         console.error('Erro ao carregar fundo padrão:', error);
-        // Caso ambos falhem, usa cor sólida de fundo
         ctx.fillStyle = '#8ad2c5';
         ctx.fillRect(0, 0, 1024, 300);
       }
@@ -83,7 +82,7 @@ module.exports = {
 
     // Level
     ctx.fillText('LEVEL', 820, 380);
-    ctx.fillText(profile.level.toString(), 820, 405);
+    ctx.fillText((profile.level || 0).toString(), 820, 405);
 
     // Ranking Dinheiro
     const moneyRank = await getMoneyRank(user.id);
