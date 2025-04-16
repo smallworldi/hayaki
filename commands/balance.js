@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUser } = require('./database');
+const { getUser } = require('../database');
 
 module.exports = {
   name: 'balance',
