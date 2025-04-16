@@ -77,13 +77,13 @@ module.exports = {
       .setTitle('Baccarat - Betting in progress...')
       .setColor('#FFFFFF')
       .addFields(
-        { name: 'Your Bet', value: `${bet} - ${amount} coins`, inline: false },
+        { name: 'Your Bet', value: `${bet} - ${amount} Synths`, inline: false },
         { name: 'Player Cards', value: 'Waiting...', inline: true },
         { name: 'Player Score', value: 'Waiting...', inline: true },
         { name: 'Banker Cards', value: 'Waiting...', inline: true },
         { name: 'Banker Score', value: 'Waiting...', inline: true },
         { name: 'Result', value: 'Waiting...', inline: false },
-        { name: 'New Balance', value: `${userBalance} coins`, inline: false }
+        { name: 'New Balance', value: `${userBalance} Synths`, inline: false }
       );
 
     const msg = await message.reply({ embeds: [embed] });
@@ -190,7 +190,7 @@ await updateBalance(message.author.id, userBalance);
     embed.setTitle('Baccarat - Game Over!')
       .setColor(winnings > amount ? '#454545' : (winnings === amount ? '#FFFFFF' : '#9a46ca'))
       .spliceFields(5, 1, { name: 'Result', value: result, inline: false })
-      .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} coins`, inline: false });
+      .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} Synths`, inline: false });
 
     await msg.edit({ embeds: [embed] });
   }
