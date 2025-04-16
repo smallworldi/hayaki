@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { getUser } = require('../database');
 const { createCanvas, loadImage } = require('canvas');
-const { MessageAttachment } = require('discord.js');
+const { AttachmentBuilder } = require('discord.js');
 
 module.exports = {
   name: 'balance',
@@ -25,7 +25,7 @@ module.exports = {
     ctx.fillText(`Bank: ${user.bank} Synths`, 50, 150);
 
 
-    const attachment = new MessageAttachment(canvas.toBuffer(), 'balance-card.png');
+const attachment = new AttachmentBuilder(buffer, { name: 'balance-card.png' });
 
 
     const embed = new EmbedBuilder()
