@@ -144,6 +144,7 @@ function getMarriage(userId) {
 
 function setMarriage(userId, partnerId) {
   return new Promise((resolve, reject) => {
+    // Atualiza o casamento na tabela 'marriages'
     db.run(
       `INSERT INTO marriages (user_id, partner_id)
        VALUES (?, ?)
@@ -151,7 +152,18 @@ function setMarriage(userId, partnerId) {
       [userId, partnerId, partnerId],
       (err) => {
         if (err) return reject(err);
-        resolve();
+
+        // Atualiza o campo 'married_with' na tabela 'user_profiles'
+        db.run(
+          `UPDATE user_profiles
+           SET married_with = ?
+           WHERE user_id = ?`,
+          [partnerId, userId],
+          (err) => {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
       }
     );
   });
