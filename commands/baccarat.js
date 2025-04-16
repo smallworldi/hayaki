@@ -18,7 +18,7 @@ module.exports = {
       return message.reply('❌ Invalid bet amount!');
     }
 
-    const { getBalance, updateBalance } = require('./database');
+    const { getBalance, updateBalance } = require('../database');
     let userBalance = await getBalance(message.author.id);
     if (userBalance < amount) {
       return message.reply('❌ Insufficient balance!');
