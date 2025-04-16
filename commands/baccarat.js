@@ -130,7 +130,7 @@ module.exports = {
       const newCard = drawCard();
       playerCards.push(newCard);
       playerScore = calculateHand(playerCards);
-      embed.setTitle('🎲 Baccarat - Betting in progress...').setColor('#0000FF');
+      embed.setTitle('🎲 Baccarat - Betting in progress...').setColor('#FFFFFF');
       embed.spliceFields(1, 1, {
         name: 'Player Cards',
         value: playerCards.map(getCardEmoji).join(' '),
@@ -154,7 +154,7 @@ module.exports = {
       const newCard = drawCard();
       bankerCards.push(newCard);
       bankerScore = calculateHand(bankerCards);
-      embed.setTitle('🎲 Baccarat - Betting in progress...').setColor('#0000FF');
+      embed.setTitle('🎲 Baccarat - Betting in progress...').setColor('#FFFFFF');
       embed.spliceFields(3, 1, {
         name: 'Banker Cards',
         value: bankerCards.map(getCardEmoji).join(' '),
@@ -186,7 +186,7 @@ module.exports = {
     await updateBalance(message.author.id, userBalance);
 
     embed.setTitle('🎲 Baccarat - Game Over!')
-      .setColor(winnings > amount ? '#00FF00' : (winnings === amount ? '#FFFF00' : '#FF0000'))
+      .setColor(winnings > amount ? '#FFFFFF' : (winnings === amount ? '#454545' : '#9a46ca'))
       .spliceFields(5, 1, { name: 'Result', value: result, inline: false })
       .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} coins`, inline: false });
 
