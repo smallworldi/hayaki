@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { getBalance } = require('../database');
+const { getUserEconomy } = require('../database');
 
 module.exports = {
   name: 'balance',
@@ -7,12 +7,12 @@ module.exports = {
   aliases: ['bal'],
   async prefixExecute(message) {
     const userId = message.author.id;
-    const user = await getBalance(userId);
+    const { wallet, bank } = await getUserEconomy(userId);
 
     const embed = new EmbedBuilder()
-      .setTitle('Your Wallet')
+      .setTitle('Your Balance')
       .setColor('#9a46ca')
-      .setDescription(`Wallet: ${user.wallet} Synths\nBank: ${user.bank} Synths`);
+      .setDescription(`**Wallet:** ${wallet} Synths\n**Bank:** ${bank} Synths`);
 
     message.reply({ embeds: [embed] });
   }
