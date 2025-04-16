@@ -1,21 +1,27 @@
 const { EmbedBuilder } = require('discord.js');
-const { getUser, updateUser } = require('../database');
+const { getUserEconomy, updateUserEconomy } = require('../database');
 
 module.exports = {
   name: 'withdraw',
   description: 'Withdraw Synths from your bank.',
   aliases: ['with'],
   async prefixExecute(message, args) {
-    const user = getUser(message.author.id);
-    const amount = args[0] === 'all' ? user.bank : parseInt(args[0]);
+    const userId = message.author.id;
+    const user = await getUserEconomy(userId);
+
+    if (!args[0]) {
+      return message.reply('Please specify an amount to withdraw.');
+    }
+
+    const amount = args[0].toLowerCase() === 'all' ? user.bank : parseInt(args[0]);
 
     if (isNaN(amount) || amount <= 0 || amount > user.bank) {
       return message.reply('Invalid amount or insufficient bank balance.');
     }
 
-    user.bank -= amount;
-    user.wallet += amount;
-    updateUser(message.author.id, user);
+    const newWallet = user.wallet + amount;
+    const newBank = user.bank - amount;
+    await updateUserEconomy(userId, newWallet, newBank);
 
     const embed = new EmbedBuilder()
       .setColor('#9a46ca')
