@@ -75,7 +75,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setTitle('Baccarat - Betting in progress...')
-      .setColor('#0000FF')
+      .setColor('#FFFFFF')
       .addFields(
         { name: 'Your Bet', value: `${bet} - ${amount} coins`, inline: false },
         { name: 'Player Cards', value: 'Waiting...', inline: true },
@@ -187,7 +187,7 @@ module.exports = {
     await updateBalance(message.author.id, userBalance);
 
     embed.setTitle('Baccarat - Game Over!')
-      .setColor(winnings > amount ? '#FFFFFF' : (winnings === amount ? '#454545' : '#9a46ca'))
+      .setColor(winnings > amount ? '#454545' : (winnings === amount ? '#FFFFFF' : '#9a46ca'))
       .spliceFields(5, 1, { name: 'Result', value: result, inline: false })
       .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} coins`, inline: false });
 
