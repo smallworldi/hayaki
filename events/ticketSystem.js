@@ -53,7 +53,7 @@ module.exports = {
           transcript += `${msg.author.tag} (${msg.author.id}): ${msg.content}\n`;
         });
 
-        const logChannel = interaction.guild.channels.cache.get('1361137563632533614');
+        const logChannel = interaction.guild.channels.cache.get('1361833707090088086');
         const { AttachmentBuilder } = require('discord.js');
 
 const buffer = Buffer.from(transcript, 'utf-8');
