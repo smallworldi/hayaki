@@ -40,7 +40,7 @@ module.exports = {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 300, 1024, 276);
 
-    // Casamento: Ajusta a largura da tarja rosa de acordo com o texto
+    // Casamento: Ajusta a largura da tarja rosa de acordo com o texto, mas com limite máximo
     if (profile.married_with) {
       const targetUser = await message.client.users.fetch(profile.married_with);
 
@@ -48,12 +48,16 @@ module.exports = {
       const text = `Casado(a) com: ${targetUser.username}`;
       const textWidth = ctx.measureText(text).width;
 
-      // Desenhar a tarja rosa com largura dinâmica
+      // Limitar a largura da tarja para um máximo de 600 pixels
+      const maxWidth = 600;
+      const finalWidth = Math.min(textWidth + 30, maxWidth); // +30 para adicionar um pequeno espaçamento extra
+
+      // Desenhar a tarja rosa com largura ajustada
       ctx.fillStyle = '#bca5ef';
       ctx.beginPath();
       ctx.moveTo(0, 300);
-      ctx.lineTo(300 + textWidth, 300);  // Ajusta a largura conforme o texto
-      ctx.lineTo(270 + textWidth, 330); // Ajusta a linha final da tarja
+      ctx.lineTo(finalWidth, 300);  // Ajusta a largura conforme o texto
+      ctx.lineTo(finalWidth - 30, 330); // Ajusta a linha final da tarja
       ctx.lineTo(0, 330);
       ctx.closePath();
       ctx.fill();
@@ -61,7 +65,8 @@ module.exports = {
       // Adicionar o texto
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 20px Arial';
-      ctx.fillText(text, 10, 322);  // Desenha o texto na tarja
+      const textX = (finalWidth - textWidth) / 2; // Centraliza o texto na tarja
+      ctx.fillText(text, textX, 322);  // Desenha o texto na tarja
     }
 
     ctx.font = '22px Arial';
