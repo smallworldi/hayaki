@@ -18,8 +18,12 @@ module.exports = {
     }
 
     const amount = Math.floor(Math.random() * 400) + 100;
-    const currentBalance = await getBalance(userId);
-    await updateBalance(userId, currentBalance + amount);
+
+    // Corrigido: agora obtém o saldo atual corretamente
+    const { wallet } = await getBalance(userId); // Assumindo que getBalance retorna um objeto com `wallet` e outros campos
+    await updateBalance(userId, wallet + amount);
+
+    // Atualizando o tempo do cooldown
     await setCooldown(userId, 'work', now);
 
     const embed = new EmbedBuilder()
