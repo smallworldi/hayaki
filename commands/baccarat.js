@@ -66,14 +66,15 @@ module.exports = {
         6: ['<:sixofspades:1361922378753380362>', '<:sixofclubs:1361922363373125683>', '<:sixofdiamonds:1361922347837161473>', '<:sixofhearts:1361922335656906954>'],
         7: ['<:sevenofspades:1361923478223327343>', '<:sevenofclubs:1361923461546774642>', '<:sevenofdiamonds:1361923446749138994>', '<:sevenofhearts:1361923432824176770>'],
         8: ['<:eightofhearts:1361924255872319688>', '<:eightofdiamonds:1361924241590718644>', '<:eightofclubs:1361924228210757803>', '<:eightofspades:1361924214046855268>'],
-        9: ['<:nineofspades:1361925011580911797>', '<:nineofclubs:1361924995286040606>', '<:nineofdiamonds:1361924979779960974>', '<:nineofhearts:1361924965317738576>']
+        9: ['<:nineofspades:1361925011580911797>', '<:nineofclubs:1361924995286040606>', '<:nineofdiamonds:1361924979779960974>', '<:nineofhearts:1361924965317738576>'],
+        10: ['<:tenofdiamonds:1361925788559212645>', '<:tenofhearts:1361925775040839740>', '<:tenofspades:1361926028385190060>', '<:tenofclubs:1361925957325160510>']
       };
       const options = emojiVariants[value];
       return options ? options[Math.floor(Math.random() * options.length)] : `(${value})`;
     }
 
     const embed = new EmbedBuilder()
-      .setTitle('🎲 Baccarat - Betting in progress...')
+      .setTitle('Baccarat - Betting in progress...')
       .setColor('#0000FF')
       .addFields(
         { name: 'Your Bet', value: `${bet} - ${amount} coins`, inline: false },
@@ -123,14 +124,14 @@ module.exports = {
     // Player draws third card
     if (playerScore <= 5) {
       await delay(3000);
-      embed.setColor('#FFA500').setTitle('🟠 Drawing third card for Player...');
+      embed.setColor('#FFA500').setTitle('Drawing third card for Player...');
       await msg.edit({ embeds: [embed] });
 
       await delay(3000);
       const newCard = drawCard();
       playerCards.push(newCard);
       playerScore = calculateHand(playerCards);
-      embed.setTitle('🎲 Baccarat - Betting in progress...').setColor('#FFFFFF');
+      embed.setTitle('Baccarat - Betting in progress...').setColor('#FFFFFF');
       embed.spliceFields(1, 1, {
         name: 'Player Cards',
         value: playerCards.map(getCardEmoji).join(' '),
@@ -147,14 +148,14 @@ module.exports = {
     // Banker draws third card
     if (bankerScore <= 5 || (bankerScore === 6 && playerScore >= 6)) {
       await delay(3000);
-      embed.setColor('#FFA500').setTitle('🟠 Drawing third card for Banker...');
+      embed.setColor('#FFA500').setTitle('Drawing third card for Banker...');
       await msg.edit({ embeds: [embed] });
 
       await delay(3000);
       const newCard = drawCard();
       bankerCards.push(newCard);
       bankerScore = calculateHand(bankerCards);
-      embed.setTitle('🎲 Baccarat - Betting in progress...').setColor('#FFFFFF');
+      embed.setTitle('Baccarat - Betting in progress...').setColor('#FFFFFF');
       embed.spliceFields(3, 1, {
         name: 'Banker Cards',
         value: bankerCards.map(getCardEmoji).join(' '),
@@ -172,20 +173,20 @@ module.exports = {
     let winnings = 0;
 
     if (playerScore > bankerScore) {
-      result = '🎉 Player wins!';
+      result = 'Player wins!';
       if (bet === 'player') winnings = amount * 2;
     } else if (bankerScore > playerScore) {
-      result = '💰 Banker wins!';
+      result = 'Banker wins!';
       if (bet === 'banker') winnings = Math.floor(amount * 1.95);
     } else {
-      result = '🤝 It\'s a Tie!';
+      result = 'It\'s a Tie!';
       winnings = (bet === 'tie') ? amount * 8 : amount; // Tie bet wins 8x, otherwise return the original bet
     }
 
     userBalance += winnings;
     await updateBalance(message.author.id, userBalance);
 
-    embed.setTitle('🎲 Baccarat - Game Over!')
+    embed.setTitle('Baccarat - Game Over!')
       .setColor(winnings > amount ? '#FFFFFF' : (winnings === amount ? '#454545' : '#9a46ca'))
       .spliceFields(5, 1, { name: 'Result', value: result, inline: false })
       .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} coins`, inline: false });
