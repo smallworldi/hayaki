@@ -18,7 +18,7 @@ module.exports = {
 
     // Texto
     ctx.fillStyle = '#ffffff';
-    ctx.font = '30px Arial';
+    ctx.font = '30px sans-serif';
     ctx.fillText(`Wallet: ${user.wallet} Synths`, 50, 100);
     ctx.fillText(`Bank: ${user.bank} Synths`, 50, 150);
 
