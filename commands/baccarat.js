@@ -18,8 +18,8 @@ module.exports = {
       return message.reply('❌ Invalid bet amount!');
     }
 
-    const { getBalance, updateBalance } = require('../database');
-    let userBalance = await getBalance(message.author.id);
+const { getUser, updateUser } = require('../database');
+let { wallet } = await getUser(message.author.id);
     if (userBalance < amount) {
       return message.reply('❌ Insufficient balance!');
     }
@@ -185,7 +185,10 @@ module.exports = {
 
     userBalance -= amount;
 userBalance += winnings;
-await updateBalance(message.author.id, userBalance);
+await updateUser(message.author.id, {
+  wallet,
+  bank: 0 // ou o valor atual do banco, se você quiser preservar
+});
 
     embed.setTitle('Baccarat - Game Over!')
       .setColor(winnings > amount ? '#454545' : (winnings === amount ? '#FFFFFF' : '#9a46ca'))
