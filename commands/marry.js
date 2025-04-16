@@ -24,6 +24,7 @@ module.exports = {
       .setTimestamp();
 
     const marryMessage = await message.channel.send({ embeds: [marryEmbed] });
+
     try {
       await marryMessage.react('✅');
       await marryMessage.react('❌');
@@ -45,11 +46,19 @@ module.exports = {
       } else {
         message.channel.send(`${targetUser.username} rejeitou o pedido de ${message.author.username}.`);
       }
+
+      // Remove reações após resposta
+      marryMessage.reactions.removeAll().catch(() => {});
     });
 
-    collector.on('end', (collected, reason) => {
+    collector.on('end', async (collected, reason) => {
       if (collected.size === 0) {
-        message.channel.send('O pedido de casamento expirou por falta de resposta.');
+        const expiredEmbed = EmbedBuilder.from(marryEmbed)
+          .setDescription(`O pedido de casamento expirou! Tempo esgotado.`)
+          .setColor('#808080');
+
+        await marryMessage.edit({ embeds: [expiredEmbed] }).catch(() => {});
+        marryMessage.reactions.removeAll().catch(() => {});
       }
     });
   }
