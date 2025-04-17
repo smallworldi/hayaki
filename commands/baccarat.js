@@ -23,10 +23,6 @@ let { wallet: userBalance } = await getUser(message.author.id);
 if (userBalance < amount) {
   return message.reply('❌ Insufficient balance!');
 }
-let { wallet } = await getUser(message.author.id);
-    if (userBalance < amount) {
-      return message.reply('❌ Insufficient balance!');
-    }
 
     function drawCard() {
       const value = Math.floor(Math.random() * 13) + 1;
