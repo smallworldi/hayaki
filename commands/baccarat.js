@@ -190,9 +190,9 @@ let { wallet } = await getUser(message.author.id);
     userBalance -= amount;
 userBalance += winnings;
 await updateUser(message.author.id, {
-  wallet,
-  bank: 0 // ou o valor atual do banco, se você quiser preservar
+  wallet: userBalance
 });
+
 
     embed.setTitle('Baccarat - Game Over!')
       .setColor(winnings > amount ? '#454545' : (winnings === amount ? '#FFFFFF' : '#9a46ca'))
