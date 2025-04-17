@@ -1,4 +1,4 @@
-const { Client, Events, GatewayIntentBits, Collection, PermissionsBitField } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Collection, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { config } = require('dotenv');
 const fs = require('fs');
 const path = require('path');
