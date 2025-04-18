@@ -9,6 +9,9 @@ module.exports = {
   async prefixExecute(message) {
     const user = message.mentions.users.first() || message.author;
     const profile = await getUserFullProfile(user.id);
+    if (!profile) {
+      return message.reply('Não foi possível carregar o perfil.');
+    }
 
     const canvas = createCanvas(1024, 576);
     const ctx = canvas.getContext('2d');
@@ -42,19 +45,23 @@ module.exports = {
 
     // Casamento
     if (profile.married_with) {
-      const targetUser = await message.client.users.fetch(profile.married_with);
-      ctx.fillStyle = '#bca5ef';
-      ctx.beginPath();
-      ctx.moveTo(0, 300);
-      ctx.lineTo(300, 300);
-      ctx.lineTo(270, 330);
-      ctx.lineTo(0, 330);
-      ctx.closePath();
-      ctx.fill();
+      try {
+        const targetUser = await message.client.users.fetch(profile.married_with);
+        ctx.fillStyle = '#bca5ef';
+        ctx.beginPath();
+        ctx.moveTo(0, 300);
+        ctx.lineTo(300, 300);
+        ctx.lineTo(270, 330);
+        ctx.lineTo(0, 330);
+        ctx.closePath();
+        ctx.fill();
 
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px Arial';
-      ctx.fillText(`Casado(a): ${targetUser.username}`, 10, 322);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(`Casado(a): ${targetUser.tag}`, 10, 322);
+      } catch (error) {
+        console.error('Erro ao buscar usuário casado:', error);
+      }
     }
 
     ctx.font = '22px Arial';
