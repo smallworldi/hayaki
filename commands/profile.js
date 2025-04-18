@@ -1,65 +1,101 @@
 const { createCanvas, loadImage } = require('canvas');
-const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
+const { getUserFullProfile, getMoneyRank } = require('../database');
+const path = require('path');
+const fs = require('fs');
 
 module.exports = {
-  name: 'profile',
-  description: 'Displays the user profile with dynamic level icon',
-  async execute(interaction) {
-    const user = interaction.user;
-    const userLevel = 10; // You can fetch the level dynamically
-    const levelColor = `hsl(${(userLevel * 30) % 360}, 100%, 50%)`; // Dynamic color based on user level
-    
-    // Create canvas to draw level icon
-    const canvas = createCanvas(128, 128);  // Change this line to use createCanvas
+  name: 'perfil',
+  aliases: ['profile'],
+  async prefixExecute(message) {
+    const user = message.mentions.users.first() || message.author;
+    const profile = await getUserFullProfile(user.id);
+
+    const canvas = createCanvas(1024, 576);
     const ctx = canvas.getContext('2d');
 
-    // Draw gradient circle for level icon
-    const gradient = ctx.createRadialGradient(64, 64, 50, 64, 64, 80);
-    gradient.addColorStop(0, '#ffcc00');
-    gradient.addColorStop(1, levelColor);
-    
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(64, 64, 60, 0, Math.PI * 2);
-    ctx.fill();
+    const defaultBackgroundPath = path.join(__dirname, '..', 'assets', 'background', 'background.png');
+    let bgImage;
 
-    // Add the level number text to the center
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 28px Arial';
+    if (profile.background && profile.background.startsWith('http')) {
+      try {
+        bgImage = await loadImage(profile.background);
+        ctx.drawImage(bgImage, 0, 0, 1024, 300);
+      } catch (error) {
+        console.error('Erro ao carregar fundo personalizado:', error);
+        bgImage = null;
+      }
+    }
+
+    if (!bgImage) {
+      try {
+        bgImage = await loadImage(defaultBackgroundPath);
+        ctx.drawImage(bgImage, 0, 0, 1024, 300);
+      } catch (error) {
+        console.error('Erro ao carregar fundo padrão:', error);
+        ctx.fillStyle = '#8ad2c5';
+        ctx.fillRect(0, 0, 1024, 300);
+      }
+    }
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 300, 1024, 276);
+
+    // Casamento
+    if (profile.married_with) {
+      const targetUser = await message.client.users.fetch(profile.married_with);
+      ctx.fillStyle = '#bca5ef';
+      ctx.beginPath();
+      ctx.moveTo(0, 300);
+      ctx.lineTo(300, 300);
+      ctx.lineTo(270, 330);
+      ctx.lineTo(0, 330);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 20px Arial';
+      ctx.fillText(Casado(a): ${targetUser.username}, 10, 322);
+    }
+
+    ctx.font = '22px Arial';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(NOME, 20, 380);
+    ctx.fillText(user.username, 20, 405);
+
+    ctx.fillText(ID, 20, 435);
+    ctx.fillText(user.id, 20, 460);
+
+    ctx.fillText(SALDO, 20, 490);
+    ctx.fillText($${profile.wallet || 0}, 20, 515);
+
+    ctx.fillText(XP/META, 20, 545);
+    ctx.fillText(${profile.xp || 0}/${profile.xp_goal || '???'}, 20, 570);
+
+    ctx.fillText('LEVEL', 820, 380);
+    ctx.fillText((profile.level || 0).toString(), 820, 405);
+
+    const moneyRank = await getMoneyRank(user.id);
+    ctx.fillText('RANKING DINHEIRO', 820, 440);
+    ctx.fillText(#${moneyRank || 'Desconhecido'}, 820, 465);
+
+    ctx.fillText('BADGES', 820, 520);
+    ctx.fillText(profile.badges || 'Nenhuma', 820, 545);
+
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(userLevel, 64, 64);
+    ctx.font = 'italic 20px Arial';
+    ctx.fillText(profile.bio || 'Este usuário não tem uma biografia.', 512, 565);
 
-    // Convert canvas to image buffer
-    const buffer = canvas.toBuffer();
+    const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(512, 300, 100, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(avatar, 412, 200, 200, 200);
+    ctx.restore();
 
-    // Create the profile embed
-    const profileEmbed = new MessageEmbed()
-      .setColor('#9a46ca')
-      .setTitle('Profile')
-      .setDescription(`Here is your profile, ${user.username}!`)
-      .setThumbnail('attachment://level-icon.png') // Attach the generated image
-      .addFields(
-        { name: '<:staff:1362591340004643006> Staff', value: 'Your position as staff.', inline: true },
-        { name: '<:user:1362591307477811220> User', value: `Level: ${userLevel}`, inline: true },
-        { name: '<:reason:1362591282295472249> Reason', value: 'Profile created.', inline: true }
-      );
-
-    // Create a row for buttons (optional)
-    const row = new MessageActionRow()
-      .addComponents(
-        new MessageButton()
-          .setCustomId('profile_button')
-          .setLabel('View Full Profile')
-          .setStyle('PRIMARY')
-      );
-
-    // Send the embed with the canvas image attached
-    await interaction.reply({
-      content: `Here is your profile, ${user.username}!`,
-      embeds: [profileEmbed],
-      files: [{ attachment: buffer, name: 'level-icon.png' }],
-      components: [row],
-    });
+    const buffer = canvas.toBuffer('image/png');
+    fs.writeFileSync('./profile-card.png', buffer);
+    return message.channel.send({ files: ['./profile-card.png'] });
   }
 };
