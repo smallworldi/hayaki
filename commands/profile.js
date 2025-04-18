@@ -1,4 +1,4 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const { getUserFullProfile, getMoneyRank } = require('../database');
 const path = require('path');
 const fs = require('fs');
@@ -59,27 +59,42 @@ module.exports = {
 
     ctx.font = '22px Arial';
     ctx.fillStyle = '#fff';
-    ctx.fillText(`NOME`, 20, 380);
+    ctx.fillText('NOME', 20, 380);
     ctx.fillText(user.username, 20, 405);
 
-    ctx.fillText(`ID`, 20, 435);
+    ctx.fillText('ID', 20, 435);
     ctx.fillText(user.id, 20, 460);
 
-    ctx.fillText(`SALDO`, 20, 490);
-    ctx.fillText(`$${profile.wallet || 0}`, 20, 515);
+    ctx.fillText('SALDO', 20, 490);
+    ctx.fillText(`${profile.wallet || 0}`, 20, 515);
 
-    ctx.fillText(`XP/META`, 20, 545);
+    ctx.fillText('XP/META', 20, 545);
     ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
-    ctx.fillText('LEVEL', 820, 380);
-    ctx.fillText((profile.level || 0).toString(), 820, 405);
+    const { createLevelBadge } = require('../utils/badges');
+    const levelBadgeBuffer = createLevelBadge(profile.level || 0, 60);
+    const levelBadge = await loadImage(levelBadgeBuffer);
+    ctx.drawImage(levelBadge, 800, 360, 60, 60);
 
     const moneyRank = await getMoneyRank(user.id);
     ctx.fillText('RANKING DINHEIRO', 820, 440);
     ctx.fillText(`#${moneyRank || 'Desconhecido'}`, 820, 465);
 
     ctx.fillText('BADGES', 820, 520);
-    ctx.fillText(profile.badges || 'Nenhuma', 820, 545);
+
+    // Draw badges
+    const badges = (profile.badges || '').split(',').filter(b => b);
+    if (badges.length > 0) {
+      const { createBadge } = require('../utils/badges');
+      badges.forEach((badge, index) => {
+        const badgeBuffer = createBadge(badge, 40);
+        loadImage(badgeBuffer).then(badgeImage => {
+          ctx.drawImage(badgeImage, 820 + (index * 45), 530, 40, 40);
+        });
+      });
+    } else {
+      ctx.fillText('Nenhuma', 820, 545);
+    }
 
     ctx.textAlign = 'center';
     ctx.font = 'italic 20px Arial';
