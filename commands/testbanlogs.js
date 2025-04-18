@@ -4,20 +4,20 @@ module.exports = {
   name: 'testbanlog',
   description: 'Send a test ban log message to the public log channel.',
   execute(message, args) {
-    const logChannelId = '1344024905250771005'; // ID do canal de logs públicos
+    const logChannelId = '1344024905250771005';
     const reason = args.join(' ') || 'No reason provided.';
 
     const user = message.author;
     const staff = message.member;
 
     const embed = new EmbedBuilder()
-      .setTitle('🔨 Member Banned')
+      .setTitle('<:ban:1362591257108676698> Member Banned')
       .addFields(
-        { name: 'User', value: `${user.tag} (${user.id})`, inline: true },
-        { name: 'Staff', value: `${staff.user.tag} (${staff.id})`, inline: true },
-        { name: 'Reason', value: reason, inline: false },
+        { name: '<:user:1362591307477811220> User', value: `${user.tag} (${user.id})`, inline: true },
+        { name: '<:staff:1362591340004643006> Staff', value: `${staff.user.tag} (${staff.id})`, inline: true },
+        { name: '<:reason:1362591282295472249> Reason', value: reason, inline: false },
       )
-      .setColor('#ff0000')
+      .setColor('#9a46ca')
       .setTimestamp();
 
     const logChannel = message.guild.channels.cache.get(logChannelId);
