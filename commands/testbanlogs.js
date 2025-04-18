@@ -15,7 +15,7 @@ module.exports = {
       displayAvatarURL: () => 'https://i.imgur.com/AfFp7pu.png', // placeholder avatar
     };
 
-    const prefixExecutor = {
+    const fakeExecutor = {
       tag: message.author.tag,
       id: message.author.id,
     };
@@ -27,7 +27,7 @@ module.exports = {
       .setColor('#ff0000')
       .addFields(
         { name: 'User', value: `${fakeUser.tag} (${fakeUser.id})`, inline: false },
-        { name: 'Banned by', value: `${prefixExecutor.tag} (${prefixExecutor.id})`, inline: false },
+        { name: 'Banned by', value: `${fakeExecutor.tag} (${fakeExecutor.id})`, inline: false },
         { name: 'Reason', value: reason, inline: false },
       )
       .setThumbnail(fakeUser.displayAvatarURL())
