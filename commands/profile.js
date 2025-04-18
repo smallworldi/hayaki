@@ -54,29 +54,29 @@ module.exports = {
 
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 20px Arial';
-      ctx.fillText(Casado(a): ${targetUser.username}, 10, 322);
+      ctx.fillText(`Casado(a): ${targetUser.username}`, 10, 322);
     }
 
     ctx.font = '22px Arial';
     ctx.fillStyle = '#fff';
-    ctx.fillText(NOME, 20, 380);
+    ctx.fillText(`NOME`, 20, 380);
     ctx.fillText(user.username, 20, 405);
 
-    ctx.fillText(ID, 20, 435);
+    ctx.fillText(`ID`, 20, 435);
     ctx.fillText(user.id, 20, 460);
 
-    ctx.fillText(SALDO, 20, 490);
-    ctx.fillText($${profile.wallet || 0}, 20, 515);
+    ctx.fillText(`SALDO`, 20, 490);
+    ctx.fillText(`$${profile.wallet || 0}`, 20, 515);
 
-    ctx.fillText(XP/META, 20, 545);
-    ctx.fillText(${profile.xp || 0}/${profile.xp_goal || '???'}, 20, 570);
+    ctx.fillText(`XP/META`, 20, 545);
+    ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
     ctx.fillText('LEVEL', 820, 380);
     ctx.fillText((profile.level || 0).toString(), 820, 405);
 
     const moneyRank = await getMoneyRank(user.id);
     ctx.fillText('RANKING DINHEIRO', 820, 440);
-    ctx.fillText(#${moneyRank || 'Desconhecido'}, 820, 465);
+    ctx.fillText(`#${moneyRank || 'Desconhecido'}`, 820, 465);
 
     ctx.fillText('BADGES', 820, 520);
     ctx.fillText(profile.badges || 'Nenhuma', 820, 545);
