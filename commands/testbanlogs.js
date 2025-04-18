@@ -2,38 +2,36 @@ const { EmbedBuilder } = require('discord.js');
 
 module.exports = {
   name: 'testbanlog',
-  description: 'Sends a fake ban log embed to the public punishment log channel',
+  description: 'Send a test ban log message to the public log channel.',
   execute(message, args) {
-    const logChannel = message.guild.channels.cache.get('1344024905250771005');
-    if (!logChannel) {
-      return message.reply('❌ Log channel not found.');
-    }
+    const logChannelId = '1344024905250771005'; // ID do canal de logs públicos
+    const reason = args.join(' ') || 'No reason provided.';
 
-    const fakeUser = {
-      tag: 'FakeUser#1234',
-      id: '123456789012345678',
-      displayAvatarURL: () => 'https://i.imgur.com/AfFp7pu.png', // placeholder avatar
-    };
-
-    const fakeExecutor = {
-      tag: message.author.tag,
-      id: message.author.id,
-    };
-
-    const reason = args.join(' ') || 'Testing punishment log embed.';
+    const user = message.author;
+    const staff = message.member;
 
     const embed = new EmbedBuilder()
       .setTitle('🔨 Member Banned')
-      .setColor('#ff0000')
       .addFields(
-        { name: 'User', value: `${fakeUser.tag} (${fakeUser.id})`, inline: false },
-        { name: 'Banned by', value: `${fakeExecutor.tag} (${fakeExecutor.id})`, inline: false },
+        { name: 'User', value: `${user.tag} (${user.id})`, inline: true },
+        { name: 'Staff', value: `${staff.user.tag} (${staff.id})`, inline: true },
         { name: 'Reason', value: reason, inline: false },
       )
-      .setThumbnail(fakeUser.displayAvatarURL())
+      .setColor('#ff0000')
       .setTimestamp();
 
-    logChannel.send({ embeds: [embed] });
-    message.reply('✅ Test ban log sent.');
+    const logChannel = message.guild.channels.cache.get(logChannelId);
+    if (!logChannel) {
+      return message.reply('❌ Could not find the log channel.');
+    }
+
+    logChannel.send({ embeds: [embed] })
+      .then(() => {
+        message.reply('✅ Test ban log sent.');
+      })
+      .catch(err => {
+        console.error(err);
+        message.reply('❌ Failed to send the log.');
+      });
   }
 };
