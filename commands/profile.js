@@ -1,94 +1,65 @@
-const { createCanvas, loadImage } = require('canvas');
-const { getUserFullProfile, getMoneyRank } = require('../database');
-const path = require('path');
-const fs = require('fs');
+const { Canvas } = require('canvas');
+const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 
 module.exports = {
-  name: 'perfil',
-  aliases: ['profile'],
-  async prefixExecute(message) {
-    const user = message.mentions.users.first() || message.author;
-    const profile = await getUserFullProfile(user.id);
-
-    const canvas = createCanvas(1024, 576);
+  name: 'profile',
+  description: 'Displays the user profile with dynamic level icon',
+  async execute(interaction) {
+    const user = interaction.user;
+    const userLevel = 10; // You can fetch the level dynamically
+    const levelColor = `hsl(${(userLevel * 30) % 360}, 100%, 50%)`; // Dynamic color based on user level
+    
+    // Create canvas to draw level icon
+    const canvas = Canvas.createCanvas(128, 128);
     const ctx = canvas.getContext('2d');
 
-    // Draw background
-    const defaultBackgroundPath = path.join(__dirname, '..', 'assets', 'background', 'background.png');
-    let bgImage;
-    if (profile.background && profile.background.startsWith('http')) {
-      try {
-        bgImage = await loadImage(profile.background);
-        ctx.drawImage(bgImage, 0, 0, 1024, 300);
-      } catch {
-        bgImage = null;
-      }
-    }
-    if (!bgImage) {
-      try {
-        bgImage = await loadImage(defaultBackgroundPath);
-        ctx.drawImage(bgImage, 0, 0, 1024, 300);
-      } catch {
-        ctx.fillStyle = '#8ad2c5';
-        ctx.fillRect(0, 0, 1024, 300);
-      }
-    }
-
-    // Bottom panel
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 300, 1024, 276);
-
-    // Marriage badge
-    if (profile.married_with) {
-      const targetUser = await message.client.users.fetch(profile.married_with);
-      ctx.fillStyle = '#bca5ef';
-      ctx.beginPath();
-      ctx.moveTo(0, 300);
-      ctx.lineTo(300, 300);
-      ctx.lineTo(270, 330);
-      ctx.lineTo(0, 330);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px Arial';
-      ctx.fillText(`Casado(a): ${targetUser.username}`, 10, 322);
-    }
-
-    // User info texts
-    ctx.fillStyle = '#fff';
-    ctx.font = '22px Arial';
-    ctx.textAlign = 'left';
-
-    ctx.fillText('NOME', 20, 380);
-    ctx.fillText(user.username, 20, 405);
-
-    ctx.fillText('ID', 20, 435);
-    ctx.fillText(user.id, 20, 460);
-
-    ctx.fillText('SALDO', 20, 490);
-    ctx.fillText(`$${profile.wallet || 0}`, 20, 515);
-
-    ctx.fillText('XP/META', 20, 545);
-    ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
-
-    // Dynamic level icon
-    const iconSize = 100;
-    const iconX = 820;
-    const iconY = 360;
-    const level = profile.level || 0;
-    const hue = (level * 10) % 360;
-    const gradient = ctx.createRadialGradient(
-      iconX + iconSize/2,
-      iconY + iconSize/2,
-      10,
-      iconX + iconSize/2,
-      iconY + iconSize/2,
-      iconSize/2
-    );
-    gradient.addColorStop(0, `hsl(${hue}, 80%, 60%)`);
-    gradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 100%, 30%)`);
-
+    // Draw gradient circle for level icon
+    const gradient = ctx.createRadialGradient(64, 64, 50, 64, 64, 80);
+    gradient.addColorStop(0, '#ffcc00');
+    gradient.addColorStop(1, levelColor);
+    
+    ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(
-      iconX + iconSize/2,
+    ctx.arc(64, 64, 60, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add the level number text to the center
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(userLevel, 64, 64);
+
+    // Convert canvas to image buffer
+    const buffer = canvas.toBuffer();
+
+    // Create the profile embed
+    const profileEmbed = new MessageEmbed()
+      .setColor('#9a46ca')
+      .setTitle('Profile')
+      .setDescription(`Here is your profile, ${user.username}!`)
+      .setThumbnail('attachment://level-icon.png') // Attach the generated image
+      .addFields(
+        { name: '<:staff:1362591340004643006> Staff', value: 'Your position as staff.', inline: true },
+        { name: '<:user:1362591307477811220> User', value: `Level: ${userLevel}`, inline: true },
+        { name: '<:reason:1362591282295472249> Reason', value: 'Profile created.', inline: true }
+      );
+
+    // Create a row for buttons (optional)
+    const row = new MessageActionRow()
+      .addComponents(
+        new MessageButton()
+          .setCustomId('profile_button')
+          .setLabel('View Full Profile')
+          .setStyle('PRIMARY')
+      );
+
+    // Send the embed with the canvas image attached
+    await interaction.reply({
+      content: `Here is your profile, ${user.username}!`,
+      embeds: [profileEmbed],
+      files: [{ attachment: buffer, name: 'level-icon.png' }],
+      components: [row],
+    });
+  }
+};
