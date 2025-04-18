@@ -1,13 +1,12 @@
 const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { getUser } = require('../database');
-const { createCanvas, registerFont } = require('canvas');
+const { createCanvas, GlobalFonts } = require('@napi-rs/canvas');
 const path = require('path');
 
+GlobalFonts.registerFromPath(path.join(__dirname, '../assets/fonts/OpenSans-Bold.ttf'), 'Open Sans');
 
-registerFont(path.join(__dirname, '../assets/fonts/OpenSans-Bold.ttf'), {
-  family: 'Open Sans',
-  weight: 'bold'
-});
+
+
 
 module.exports = {
   name: 'balance',
