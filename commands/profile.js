@@ -13,34 +13,32 @@ module.exports = {
     const canvas = createCanvas(1024, 576);
     const ctx = canvas.getContext('2d');
 
+    // Draw background
     const defaultBackgroundPath = path.join(__dirname, '..', 'assets', 'background', 'background.png');
     let bgImage;
-
     if (profile.background && profile.background.startsWith('http')) {
       try {
         bgImage = await loadImage(profile.background);
         ctx.drawImage(bgImage, 0, 0, 1024, 300);
-      } catch (error) {
-        console.error('Erro ao carregar fundo personalizado:', error);
+      } catch {
         bgImage = null;
       }
     }
-
     if (!bgImage) {
       try {
         bgImage = await loadImage(defaultBackgroundPath);
         ctx.drawImage(bgImage, 0, 0, 1024, 300);
-      } catch (error) {
-        console.error('Erro ao carregar fundo padrão:', error);
+      } catch {
         ctx.fillStyle = '#8ad2c5';
         ctx.fillRect(0, 0, 1024, 300);
       }
     }
 
+    // Bottom panel
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 300, 1024, 276);
 
-    // Casamento
+    // Marriage badge
     if (profile.married_with) {
       const targetUser = await message.client.users.fetch(profile.married_with);
       ctx.fillStyle = '#bca5ef';
@@ -57,45 +55,40 @@ module.exports = {
       ctx.fillText(`Casado(a): ${targetUser.username}`, 10, 322);
     }
 
-    ctx.font = '22px Arial';
+    // User info texts
     ctx.fillStyle = '#fff';
-    ctx.fillText(`NOME`, 20, 380);
+    ctx.font = '22px Arial';
+    ctx.textAlign = 'left';
+
+    ctx.fillText('NOME', 20, 380);
     ctx.fillText(user.username, 20, 405);
 
-    ctx.fillText(`ID`, 20, 435);
+    ctx.fillText('ID', 20, 435);
     ctx.fillText(user.id, 20, 460);
 
-    ctx.fillText(`SALDO`, 20, 490);
+    ctx.fillText('SALDO', 20, 490);
     ctx.fillText(`$${profile.wallet || 0}`, 20, 515);
 
-    ctx.fillText(`XP/META`, 20, 545);
+    ctx.fillText('XP/META', 20, 545);
     ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
-    ctx.fillText('LEVEL', 820, 380);
-    ctx.fillText((profile.level || 0).toString(), 820, 405);
+    // Dynamic level icon
+    const iconSize = 100;
+    const iconX = 820;
+    const iconY = 360;
+    const level = profile.level || 0;
+    const hue = (level * 10) % 360;
+    const gradient = ctx.createRadialGradient(
+      iconX + iconSize/2,
+      iconY + iconSize/2,
+      10,
+      iconX + iconSize/2,
+      iconY + iconSize/2,
+      iconSize/2
+    );
+    gradient.addColorStop(0, `hsl(${hue}, 80%, 60%)`);
+    gradient.addColorStop(1, `hsl(${(hue + 60) % 360}, 100%, 30%)`);
 
-    const moneyRank = await getMoneyRank(user.id);
-    ctx.fillText('RANKING DINHEIRO', 820, 440);
-    ctx.fillText(`#${moneyRank || 'Desconhecido'}`, 820, 465);
-
-    ctx.fillText('BADGES', 820, 520);
-    ctx.fillText(profile.badges || 'Nenhuma', 820, 545);
-
-    ctx.textAlign = 'center';
-    ctx.font = 'italic 20px Arial';
-    ctx.fillText(profile.bio || 'Este usuário não tem uma biografia.', 512, 565);
-
-    const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
-    ctx.save();
     ctx.beginPath();
-    ctx.arc(512, 300, 100, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(avatar, 412, 200, 200, 200);
-    ctx.restore();
-
-    const buffer = canvas.toBuffer('image/png');
-    fs.writeFileSync('./profile-card.png', buffer);
-    return message.channel.send({ files: ['./profile-card.png'] });
-  }
-};
+    ctx.arc(
+      iconX + iconSize/2,
