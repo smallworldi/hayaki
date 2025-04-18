@@ -1,38 +1,49 @@
-
 const { createCanvas } = require('@napi-rs/canvas');
 
 function createBadge(type, size = 40) {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
-  
+
   // Common badge background
   ctx.beginPath();
   ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
   ctx.fillStyle = '#2c2f33';
   ctx.fill();
 
+  // Get badge color based on type
+  const badgeColor = getBadgeColor(type);
+
   switch(type) {
     case 'hex':
-      drawHexBadge(ctx, size);
+      drawHexBadge(ctx, size, badgeColor);
       break;
-    case 'diamond':
-      drawDiamondBadge(ctx, size);
+    case 'shield':
+      drawShieldBadge(ctx, size, badgeColor);
       break;
-    case 'star':
-      drawStarBadge(ctx, size);
-      break;
-    case 'spiral':
-      drawSpiralBadge(ctx, size);
-      break;
-    case 'flower':
-      drawFlowerBadge(ctx, size);
+    case 'circle':
+      drawCircleBadge(ctx, size, badgeColor);
       break;
   }
 
   return canvas.toBuffer('image/png');
 }
 
-function drawHexBadge(ctx, size) {
+function getBadgeColor(type) {
+  const colors = {
+    0: '#FFFFFF',    // Branco
+    100: '#FF0000',  // Vermelho
+    200: '#FF6600',  // Laranja
+    300: '#FFFF00',  // Amarelo
+    400: '#00FF00',  // Verde
+    500: '#0099FF',  // Azul
+    600: '#6633FF',  // Roxo
+    700: '#FF00FF',  // Rosa
+    800: '#990000'   // Vermelho escuro
+  };
+  return colors[type] || '#FFFFFF';
+}
+
+function drawHexBadge(ctx, size, color) {
   ctx.beginPath();
   for(let i = 0; i < 6; i++) {
     const angle = (Math.PI / 3) * i;
@@ -41,94 +52,78 @@ function drawHexBadge(ctx, size) {
     i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.strokeStyle = '#9a46ca';
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.stroke();
 }
 
-function drawDiamondBadge(ctx, size) {
+function drawShieldBadge(ctx, size, color) {
   ctx.beginPath();
-  ctx.moveTo(size/2, size/4);
-  ctx.lineTo(size*3/4, size/2);
-  ctx.lineTo(size/2, size*3/4);
-  ctx.lineTo(size/4, size/2);
+  ctx.moveTo(size/2, size/6);
+  ctx.lineTo(size*5/6, size/2);
+  ctx.lineTo(size/2, size*5/6);
+  ctx.lineTo(size/6, size/2);
   ctx.closePath();
-  ctx.strokeStyle = '#ff5555';
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.stroke();
 }
 
-function drawStarBadge(ctx, size) {
-  const spikes = 5;
-  const outerRadius = size/2;
-  const innerRadius = size/4;
-  
+function drawCircleBadge(ctx, size, color) {
   ctx.beginPath();
-  for(let i = 0; i < spikes * 2; i++) {
-    const radius = i % 2 === 0 ? outerRadius : innerRadius;
-    const angle = (Math.PI / spikes) * i;
-    const x = size/2 + radius * Math.cos(angle - Math.PI/2);
-    const y = size/2 + radius * Math.sin(angle - Math.PI/2);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.closePath();
-  ctx.strokeStyle = '#ffaa00';
+  ctx.arc(size/2, size/2, size/3, 0, Math.PI * 2);
+  ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.stroke();
-}
-
-function drawSpiralBadge(ctx, size) {
-  ctx.beginPath();
-  for(let i = 0; i < 720; i++) {
-    const angle = 0.1 * i;
-    const radius = (size/4) * (1 - i/720);
-    const x = size/2 + radius * Math.cos(angle);
-    const y = size/2 + radius * Math.sin(angle);
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  }
-  ctx.strokeStyle = '#55ff55';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-}
-
-function drawFlowerBadge(ctx, size) {
-  const petals = 6;
-  for(let i = 0; i < petals; i++) {
-    ctx.beginPath();
-    const angle = (Math.PI * 2 / petals) * i;
-    ctx.ellipse(
-      size/2 + (size/6) * Math.cos(angle),
-      size/2 + (size/6) * Math.sin(angle),
-      size/6,
-      size/8,
-      angle,
-      0,
-      Math.PI * 2
-    );
-    ctx.strokeStyle = '#5555ff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
 }
 
 function createLevelBadge(level, size = 40) {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
   
-  // Badge circle outline
-  ctx.beginPath();
-  ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI * 2);
-  ctx.strokeStyle = level % 10 === 0 ? '#808080' : '#4a90e2';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  const color = level % 10 === 0 ? '#808080' : getBadgeColor(Math.floor(level/100) * 100);
   
+  // Escolhe o formato baseado no nível
+  if (level <= 100) {
+    // Círculo para níveis 0-100
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else if (level <= 300) {
+    // Hexágono para níveis 101-300
+    ctx.beginPath();
+    for(let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      const x = size/2 + (size/2 - 2) * Math.cos(angle);
+      const y = size/2 + (size/2 - 2) * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else {
+    // Escudo para níveis 301+
+    ctx.beginPath();
+    ctx.moveTo(size/2, 2);
+    ctx.lineTo(size-2, size/2);
+    ctx.lineTo(size/2, size-2);
+    ctx.lineTo(2, size/2);
+    ctx.closePath();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
   // Level text
-  ctx.fillStyle = level % 10 === 0 ? '#808080' : '#4a90e2';
+  ctx.fillStyle = color;
   ctx.font = 'bold ' + (size/2.5) + 'px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(level.toString(), size/2, size/2);
-  
+
   return canvas.toBuffer('image/png');
 }
 
