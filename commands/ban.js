@@ -21,9 +21,7 @@ module.exports = {
       return message.reply('Я не могу забанить этого пользователя.');
     }
 
-    // Pega o motivo a partir do argumento (remove a menção do array)
-    const reason = args.slice(1).join(' ') || 'Не указано'; // "Не указано" = "Não Informado"
-
+    const reason = args.slice(1).join(' ') || 'Не указано'; 
     try {
       await member.ban({ reason });
 
