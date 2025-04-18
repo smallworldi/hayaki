@@ -1,4 +1,4 @@
-const { Canvas } = require('canvas');
+const { createCanvas, loadImage } = require('canvas');
 const { MessageActionRow, MessageButton, MessageEmbed } = require('discord.js');
 
 module.exports = {
@@ -10,7 +10,7 @@ module.exports = {
     const levelColor = `hsl(${(userLevel * 30) % 360}, 100%, 50%)`; // Dynamic color based on user level
     
     // Create canvas to draw level icon
-    const canvas = Canvas.createCanvas(128, 128);
+    const canvas = createCanvas(128, 128);  // Change this line to use createCanvas
     const ctx = canvas.getContext('2d');
 
     // Draw gradient circle for level icon
