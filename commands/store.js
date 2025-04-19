@@ -17,6 +17,7 @@ const backgrounds = [
   'background10.png',
   'background11.png',
   'background12.png',
+  'background13.png',
 ];
 
 const layouts = [
