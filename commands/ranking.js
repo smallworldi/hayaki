@@ -9,16 +9,29 @@ module.exports = {
   async execute(message, args) {
     const leaderboard = await getXPLeaderboard();
     const sortedUsers = leaderboard
-      .filter(user => user.level > 0)  // Only show users with levels
       .sort((a, b) => {
         if (b.level !== a.level) {
-          return b.level - a.level; // First sort by level
+          return b.level - a.level;
         }
-        return b.xp - a.xp; // If levels are equal, sort by XP
-      })
-      .slice(0, 10); // Show top 10 instead of 5
+        return b.xp - a.xp;
+      });
+
+    // Console logging for all users
+    console.log('\n=== RANKING COMPLETO ===');
+    let position = 1;
+    for (const userData of sortedUsers) {
+      const user = await message.client.users.fetch(userData.user_id).catch(() => null);
+      if (user) {
+        console.log(`#${position} ${user.username} - Level: ${userData.level}, XP: ${userData.xp}`);
+        position++;
+      }
+    }
+    console.log('=====================\n');
+
+    // Get first 8 users for display
+    const displayUsers = sortedUsers.slice(0, 8);
     
-    const canvas = createCanvas(800, 800); // Increased height for more entries
+    const canvas = createCanvas(800, 750);
     const ctx = canvas.getContext('2d');
 
     // Black background
@@ -31,11 +44,23 @@ module.exports = {
     ctx.textAlign = 'center';
     ctx.fillText('— Scripture', canvas.width / 2, 50);
 
-    let yPosition = 80;
-    const rowHeight = 85;
+    let yPosition = 100;
+    const rowHeight = 75;
     
-    for (let i = 0; i < sortedUsers.length; i++) {
-      const userData = sortedUsers[i];
+    for (let i = 0; i < 8; i++) {
+      const userData = displayUsers[i];
+      if (!userData) {
+        // Create empty slot for missing position
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(20, yPosition, canvas.width - 40, rowHeight);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'left';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText(`#${i + 1} Empty Position`, 100, yPosition + rowHeight/2);
+        yPosition += rowHeight + 10;
+        continue;
+      }
+
       const user = await message.client.users.fetch(userData.user_id).catch(() => null);
       if (!user) continue;
 
@@ -47,14 +72,13 @@ module.exports = {
 
       try {
         const bgImage = await loadImage(bgPath);
-        ctx.globalAlpha = 0.5; // Set opacity to 50%
-        ctx.drawImage(bgImage, 50, yPosition, canvas.width - 50, rowHeight);
-        ctx.globalAlpha = 1.0; // Reset opacity for other elements
+        ctx.globalAlpha = 0.3;
+        ctx.drawImage(bgImage, 20, yPosition, canvas.width - 40, rowHeight);
+        ctx.globalAlpha = 1.0;
       } catch (err) {
-        console.error('Error loading background:', err);
         ctx.fillStyle = '#1e90ff';
-        ctx.globalAlpha = 0.5;
-        ctx.fillRect(50, yPosition, canvas.width - 50, rowHeight);
+        ctx.globalAlpha = 0.3;
+        ctx.fillRect(20, yPosition, canvas.width - 40, rowHeight);
         ctx.globalAlpha = 1.0;
       }
 
@@ -63,39 +87,35 @@ module.exports = {
         const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 128 }));
         ctx.save();
         ctx.beginPath();
-        ctx.arc(55, yPosition + 40, 30, 0, Math.PI * 2);
+        ctx.arc(55, yPosition + rowHeight/2, 25, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(avatar, 25, yPosition + 10, 60, 60);
+        ctx.drawImage(avatar, 30, yPosition + rowHeight/2 - 25, 50, 50);
         ctx.restore();
       } catch (err) {
         console.error('Error loading avatar:', err);
       }
 
-      // Semi-transparent overlay for better text readability
+      // Text overlay
       ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-      ctx.fillRect(0, yPosition, canvas.width, rowHeight);
+      ctx.fillRect(20, yPosition, canvas.width - 40, rowHeight);
 
       // Rank number and username
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'left';
       ctx.font = 'bold 24px Arial';
-      ctx.fillText(`#${i + 1} ${user.username}`, 100, yPosition + 35);
+      ctx.fillText(`#${i + 1} ${user.username}`, 100, yPosition + rowHeight/2);
 
-      // User ID
+      // XP and Level info
       ctx.font = '18px Arial';
-      ctx.fillText(`ID: ${userData.user_id}`, 100, yPosition + 60);
-
-      // XP info and level badge
-      ctx.fillText(`XP Total: ${userData.xp} // `, 400, yPosition + 60);
+      ctx.fillText(`XP: ${userData.xp}`, 400, yPosition + rowHeight/2);
       
-      // Add "LEVEL" text and badge
-      ctx.fillText('LEVEL', 585, yPosition + 53);
-      const levelBadge = await createLevelBadge(userData.level || 0, 40);
+      ctx.fillText('LEVEL', 600, yPosition + rowHeight/2 - 10);
+      const levelBadge = await createLevelBadge(userData.level || 0, 35);
       const levelImg = await loadImage(levelBadge);
-      ctx.drawImage(levelImg, 650, yPosition + 25, 40, 40);
+      ctx.drawImage(levelImg, 670, yPosition + rowHeight/2 - 25, 35, 35);
 
-      yPosition += rowHeight;
+      yPosition += rowHeight + 10;
     }
 
     return message.channel.send({ files: [{ attachment: canvas.toBuffer(), name: 'ranking.png' }] });
