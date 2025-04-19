@@ -42,6 +42,13 @@ db.serialize(() => {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS reputation (
+      user_id TEXT PRIMARY KEY,
+      reps INTEGER DEFAULT 0
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS user_profiles (
       user_id TEXT PRIMARY KEY,
       xp INTEGER DEFAULT 0,
@@ -244,7 +251,11 @@ function setCooldown(userId, command, timestamp) {
 
 // Perfil completo (saldo + perfil + casado)
 async function getUserFullProfile(userId) {
-  const [user, profile] = await Promise.all([getUser(userId), getUserProfile(userId)]);
+  const [user, profile, reps] = await Promise.all([
+    getUser(userId), 
+    getUserProfile(userId),
+    getUserReps(userId)
+  ]);
   let level = profile.level || 0;
   let currentXP = profile.xp || 0;
   let xpGoal = calculateXPGoal(level);
@@ -268,7 +279,8 @@ async function getUserFullProfile(userId) {
     ...profile,
     level,
     xp: currentXP,
-    xp_goal: xpGoal
+    xp_goal: xpGoal,
+    reps
   };
 }
 
@@ -284,10 +296,44 @@ function getMoneyRank(userId) {
 }
 
 // Exportação
+async function getUserReps(userId) {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT reps FROM reputation WHERE user_id = ?', [userId], (err, row) => {
+      if (err) return reject(err);
+      if (row) return resolve(row.reps);
+      
+      db.run('INSERT INTO reputation (user_id, reps) VALUES (?, ?)', [userId, 0], (err) => {
+        if (err) return reject(err);
+        resolve(0);
+      });
+    });
+  });
+}
+
+async function addRep(userId) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      `INSERT INTO reputation (user_id, reps) VALUES (?, 1)
+       ON CONFLICT(user_id) DO UPDATE SET reps = reps + 1
+       RETURNING reps`,
+      [userId],
+      function(err) {
+        if (err) return reject(err);
+        db.get('SELECT reps FROM reputation WHERE user_id = ?', [userId], (err, row) => {
+          if (err) return reject(err);
+          resolve(row.reps);
+        });
+      }
+    );
+  });
+}
+
 module.exports = {
   db,
   getUser,
   updateUser,
+  getUserReps,
+  addRep,
   getUserProfile,
   updateUserProfile,
   getXPLeaderboard,
