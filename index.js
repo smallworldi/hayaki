@@ -374,10 +374,10 @@ client.once(Events.ClientReady, () => {
   console.log(`Бот ${client.user.tag} запущен!`);
 
   client.user.setPresence({
-    status: 'dnd', // Status "Do Not Disturb"
+    status: 'dnd', 
     activities: [{
-      name: 'Fazendo coisas legais!', // Atividade personalizada
-      type: 'PLAYING', // Tipo de atividade (pode ser 'PLAYING', 'STREAMING', 'LISTENING', 'WATCHING')
+      name: '🤍!', 
+      type: 'PLAYING', 
     }],
   })
   .then(() => {
