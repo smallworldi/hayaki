@@ -376,16 +376,22 @@ client.once(Events.ClientReady, () => {
   client.on('ready', () => {
   console.log(`Bot logado como ${client.user.tag}`);
 
+  client.on('ready', () => {
+  console.log(`Bot está logado como ${client.user.tag}`);
+
   client.user.setPresence({
-     status: 'dnd', // Status "Do Not Disturb"
-     status: 'dnd', 
-     activities: [{
-       name: 'Fazendo coisas legais!', // Atividade personalizada
-       type: 'PLAYING', // Tipo de atividade (pode ser 'PLAYING', 'STREAMING', 'LISTENING', 'WATCHING')
-       name: '🤍!', 
-       type: 'PLAYING', 
-     }],
-   })
+    status: 'dnd', 
+    activities: [{
+      name: 'Fazendo coisas legais!', 
+      type: 'PLAYING', 
+    }],
+  })
+  .then(() => {
+    console.log('Bot está agora em DND!');
+  })
+  .catch(console.error);
+});
+
 
 
 client.login(process.env.TOKEN);
