@@ -1,10 +1,8 @@
 
 const { createCanvas, loadImage } = require('canvas');
+registerFont('./assets/fonts/NotoSans-Bold.ttf', { family: 'NotoSans' });
 const { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { getUser, updateUser } = require('../database');
-
-registerFont('./assets/fonts/NotoSans-Regular.ttf', { family: 'NotoSans' });
-
 module.exports = {
   name: 'balance',
   aliases: ['bal'],
