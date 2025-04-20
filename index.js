@@ -382,7 +382,7 @@ client.once(Events.ClientReady, () => {
   client.user.setPresence({
     status: 'dnd', 
     activities: [{
-      name: 'Fazendo coisas legais!', 
+      name: '!', 
       type: 'PLAYING', 
     }],
   })
