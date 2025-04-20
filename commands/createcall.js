@@ -10,8 +10,8 @@ module.exports = {
     }
 
     const embed = new EmbedBuilder()
-      .setTitle('🎮 Create Private Call')
-      .setDescription('Click the button below to create your private voice channel')
+      .setTitle('Pronto para criar seu próprio canal de voz privado?')
+      .setDescription('Clique no botão abaixo para criar um canal de voz exclusivo e privado, onde você poderá conversar com total privacidade. Tenha um espaço reservado para você e seus convidados, sem interrupções externas.')
       .setColor('#000000');
 
     const button = new ActionRowBuilder()
