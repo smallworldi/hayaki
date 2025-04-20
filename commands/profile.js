@@ -1,3 +1,4 @@
+
 const { createCanvas, loadImage } = require('canvas');
 const { UserFlags, UserPremiumType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUserFullProfile, getXPLeaderboard } = require('../database');
@@ -5,7 +6,7 @@ const { createLevelBadge } = require('../utils/badges');
 const path = require('path');
 const fs = require('fs');
 
-// Сопоставление значков с локальными PNG-файлами
+// Mapping badges to local PNG files
 const Emojis = {
   nitro_classic: 'nitro.png',
   nitro: 'nitro.png',
@@ -30,7 +31,7 @@ module.exports = {
     if (args[0]) {
       userMention = message.mentions.users.first();
       if (!userMention) {
-        return message.reply('Пожалуйста, упомяните допустимого пользователя!');
+        return message.reply('Please mention a valid user!');
       }
     } else {
       userMention = message.author;
@@ -42,14 +43,14 @@ module.exports = {
     try {
       member = await message.guild.members.fetch(user.id);
     } catch {
-      // Пользователь не на сервере
+      // User not in server
     }
 
-    // Настройка Canvas
+    // Canvas Setup
     const canvas = createCanvas(1024, 576);
     const ctx = canvas.getContext('2d');
 
-    // Фон
+    // Background
     const defaultBg = path.join(__dirname, '..', 'assets', 'background', 'background.png');
     try {
       let bgPath;
@@ -63,16 +64,16 @@ module.exports = {
       const bgImg = await loadImage(bgPath);
       ctx.drawImage(bgImg, 0, 0, 1024, 300);
     } catch (err) {
-      console.error('Ошибка при загрузке фона:', err);
+      console.error('Error loading background:', err);
       ctx.fillStyle = '#8ad2c5';
       ctx.fillRect(0, 0, 1024, 300);
     }
 
-    // Нижняя панель
+    // Bottom panel
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 300, 1024, 276);
 
-    // Значок "Женат(а)"
+    // "Married" badge
     if (profile.married_with) {
       const partner = await message.client.users.fetch(profile.married_with);
       ctx.fillStyle = '#bca5ef';
@@ -86,35 +87,35 @@ module.exports = {
 
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 20px Arial';
-      ctx.fillText(`Женат: ${partner.username}`, 10, 322);
+      ctx.fillText(`Married to: ${partner.username}`, 10, 322);
     }
 
-    // Информация о пользователе
+    // User information
     ctx.fillStyle = '#fff';
     ctx.font = '22px Arial';
-    ctx.fillText('ИМЯ', 20, 380);
+    ctx.fillText('NAME', 20, 380);
     ctx.fillText(user.username, 20, 405);
     ctx.fillText('ID', 20, 435);
     ctx.fillText(user.id, 20, 460);
-    ctx.fillText('БАЛАНС', 20, 490);
+    ctx.fillText('BALANCE', 20, 490);
     ctx.fillText(`${(profile.wallet || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Synths`, 20, 515);
-    ctx.fillText('ОПЫТ/ЦЕЛЬ', 20, 545);
+    ctx.fillText('XP/GOAL', 20, 545);
     ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
-    // Значок уровня
-    ctx.fillText('УРОВЕНЬ', 820, 390);
+    // Level badge
+    ctx.fillText('LEVEL', 820, 390);
     const lvlBuf = createLevelBadge(profile.level || 0, 40);
     const lvlImg = await loadImage(lvlBuf);
     ctx.drawImage(lvlImg, 930, 360, 40, 40);
 
-    // Таблица лидеров по XP
+    // XP Leaderboard
     const xpLeaderboard = await getXPLeaderboard(message.guild.id);
-    ctx.fillText('РЕЙТИНГ XP', 820, 440);
+    ctx.fillText('XP RANK', 820, 440);
     if (!Array.isArray(xpLeaderboard) || xpLeaderboard.length === 0) {
-      ctx.fillText('#Неизвестно', 820, 465);
+      ctx.fillText('#Unknown', 820, 465);
     } else {
       const rank = xpLeaderboard.findIndex(e => e.user_id === user.id) + 1;
-      ctx.fillText(`#${rank > 0 ? rank : 'Неизвестно'}`, 820, 465);
+      ctx.fillText(`#${rank > 0 ? rank : 'Unknown'}`, 820, 465);
     }
 
     ctx.fillText('REPS', 820, 490);
@@ -122,7 +123,7 @@ module.exports = {
 
     const badges = [];
 
-    // 🔹 Глобальные значки (User.flags)
+    // Global badges (User.flags)
     const flags = (await user.fetch(true)).flags;
     if (user.bot) badges.push('verified_bot');
     if (flags?.has(UserFlags.VerifiedDeveloper)) badges.push('developer');
@@ -132,7 +133,7 @@ module.exports = {
     if (flags?.has(UserFlags.PremiumEarlySupporter)) badges.push('early_supporter');
     if (flags?.has(UserFlags.CertifiedModerator)) badges.push('certified_mod');
 
-    // 🔹 Локальные значки (если пользователь на сервере)
+    // Local badges (if user is in server)
     if (member) {
       if (member.premiumType === 2) badges.push('nitro');
       else if (member.premiumType === 1) badges.push('nitro_classic');
@@ -148,10 +149,10 @@ module.exports = {
       }
     }
 
-    // Имя пользователя и значки
+    // Username and badges
     ctx.fillText(user.username, 20, 405);
 
-    // Системные значки
+    // System badges
     if (badges.length > 0) {
       for (let i = 0; i < badges.length; i++) {
         const key = badges[i];
@@ -162,12 +163,12 @@ module.exports = {
           const badgeImg = await loadImage(imgPath);
           ctx.drawImage(badgeImg, 20 + ctx.measureText(user.username).width + 10 + (i * 35), 380, 25, 25);
         } catch (err) {
-          console.error(`Ошибка при загрузке значка ${key}:`, err.message);
+          console.error(`Error loading badge ${key}:`, err.message);
         }
       }
     }
 
-    // Пользовательские значки
+    // Custom badges
     const customBadges = profile.badges ? JSON.parse(profile.badges) : [];
     if (customBadges.length > 0) {
       for (let i = 0; i < customBadges.length; i++) {
@@ -177,7 +178,7 @@ module.exports = {
           const badgeImg = await loadImage(emojiUrl);
           ctx.drawImage(badgeImg, 20 + ctx.measureText(user.username).width + 10 + ((badges.length + i) * 35), 380, 25, 25);
         } catch (err) {
-          console.error(`Ошибка при загрузке пользовательского emoji ${emojiId}:`, err.message);
+          console.error(`Error loading custom emoji ${emojiId}:`, err.message);
         }
       }
     }
@@ -185,9 +186,9 @@ module.exports = {
     ctx.textAlign = 'center';
     ctx.font = 'italic 20px Arial';
 
-    const bio = profile.bio || 'У этого пользователя нет биографии.';
+    const bio = profile.bio || 'This user has no biography.';
     const emojiRegex = /<a?:\w+:\d+>/g;
-    const cleanBio = bio.replace(emojiRegex, '🔸'); 
+    const cleanBio = bio.replace(emojiRegex, '🔸');
 
     ctx.fillText(cleanBio, 512, 565);
 
@@ -201,11 +202,11 @@ module.exports = {
         ctx.drawImage(emojiImg, emojiX, 545, 20, 20);
         emojiX += 20;
       } catch (err) {
-        console.error('Erro ao carregar emoji:', err);
+        console.error('Error loading emoji:', err);
       }
     }
 
-    // Аватар
+    // Avatar
     const avatar = await loadImage(user.displayAvatarURL({ extension: 'png', size: 256 }));
     ctx.save();
     ctx.beginPath();
@@ -215,7 +216,7 @@ module.exports = {
     ctx.drawImage(avatar, 412, 200, 200, 200);
     ctx.restore();
 
-    // Значок разработчика
+    // Developer badge
     const { isDeveloper } = require('../utils/developers');
     if (isDeveloper(user.id)) {
       const gradient = ctx.createLinearGradient(1024, 0, 724, 0);
@@ -233,7 +234,7 @@ module.exports = {
 
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 20px Arial';
-      ctx.fillText('Разработчик Hayaki', 910, 282);
+      ctx.fillText('Hayaki Developer', 910, 282);
     } else if (profile.title && profile.titleGradient) {
       const gradient = ctx.createLinearGradient(1024, 0, 724, 0);
 
@@ -263,7 +264,7 @@ module.exports = {
       .addComponents(
         new ButtonBuilder()
           .setCustomId('change_bio')
-          .setLabel('Изменить биографию')
+          .setLabel('Change Biography')
           .setStyle(ButtonStyle.Secondary)
       );
 
