@@ -373,18 +373,20 @@ client.on(Events.MessageCreate, async message => {
 client.once(Events.ClientReady, () => {
   console.log(`Бот ${client.user.tag} запущен!`);
 
+  client.on('ready', () => {
+  console.log(`Bot logado como ${client.user.tag}`);
+
   client.user.setPresence({
-    status: 'dnd', 
+    status: 'dnd',
     activities: [{
-      name: '🤍!', 
-      type: 'PLAYING', 
+      name: '🖤',
+      type: Discord.ActivityType.Playing, 
     }],
-  })
-  .then(() => {
-    console.log('Bot está agora em DND!');
-  })
-  .catch(console.error);
+  });
+
+  console.log('Status definido como DND');
 });
+
 
 client.login(process.env.TOKEN);
 
