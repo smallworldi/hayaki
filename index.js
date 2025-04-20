@@ -372,6 +372,18 @@ client.on(Events.MessageCreate, async message => {
 
 client.once(Events.ClientReady, () => {
   console.log(`Бот ${client.user.tag} запущен!`);
+
+  client.user.setPresence({
+    status: 'dnd', // Status "Do Not Disturb"
+    activities: [{
+      name: 'Fazendo coisas legais!', // Atividade personalizada
+      type: 'PLAYING', // Tipo de atividade (pode ser 'PLAYING', 'STREAMING', 'LISTENING', 'WATCHING')
+    }],
+  })
+  .then(() => {
+    console.log('Bot está agora em DND!');
+  })
+  .catch(console.error);
 });
 
 client.login(process.env.TOKEN);
