@@ -197,7 +197,7 @@ client.on(Events.InteractionCreate, async interaction => {
   } else if (interaction.customId === 'create_voice') {
     const member = await interaction.guild.members.fetch(interaction.user.id);
     if (member.voice.channelId !== '1359954764598612089') {
-      return interaction.reply({ content: 'You need to join the "➕・create" channel first!', ephemeral: true });
+      return interaction.reply({ content: 'Você precisa entrar no canal "➕・Criar Call" primeiro!', ephemeral: true });
     }
 
     await interaction.reply('Please enter a name for your voice channel:');
