@@ -373,14 +373,11 @@ client.on(Events.MessageCreate, async message => {
 client.once(Events.ClientReady, () => {
   console.log(`Бот ${client.user.tag} запущен!`);
 
-client.on('ready', () => {
-  console.log(`Bot está logado como ${client.user.tag}`);
-
   client.user.setPresence({
-    status: 'dnd', 
+    status: 'dnd', // Status "Do Not Disturb"
     activities: [{
-      name: '!',
-      type: 'PLAYING', 
+      name: 'Fazendo coisas legais!', // Atividade personalizada
+      type: 'PLAYING', // Tipo de atividade (pode ser 'PLAYING', 'STREAMING', 'LISTENING', 'WATCHING')
     }],
   })
   .then(() => {
@@ -389,7 +386,6 @@ client.on('ready', () => {
   .catch(console.error);
 });
 
-  
 client.login(process.env.TOKEN);
 
 function getLanguageButtons() {
