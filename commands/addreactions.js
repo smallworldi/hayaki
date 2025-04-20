@@ -3,7 +3,7 @@ module.exports = {
   description: 'Добавляет кастомные реакции к embed-сообщению.',
 
   async prefixExecute(message, args, client) {
-    const ownerId = '1217811542012198926';
+    const ownerId = '1032510101753446421';
     if (message.author.id !== ownerId) {
       return message.reply('❌ У вас нет прав использовать эту команду.');
     }
