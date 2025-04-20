@@ -377,15 +377,15 @@ client.once(Events.ClientReady, () => {
   console.log(`Bot logado como ${client.user.tag}`);
 
   client.user.setPresence({
-    status: 'dnd',
-    activities: [{
-      name: '🖤',
-      type: Discord.ActivityType.Playing, 
-    }],
-  });
-
-  console.log('Status definido como DND');
-});
+     status: 'dnd', // Status "Do Not Disturb"
+     status: 'dnd', 
+     activities: [{
+       name: 'Fazendo coisas legais!', // Atividade personalizada
+       type: 'PLAYING', // Tipo de atividade (pode ser 'PLAYING', 'STREAMING', 'LISTENING', 'WATCHING')
+       name: '🤍!', 
+       type: 'PLAYING', 
+     }],
+   })
 
 
 client.login(process.env.TOKEN);
