@@ -74,7 +74,7 @@ module.exports = {
     ctx.fillText('ID', 20, 435);
     ctx.fillText(user.id, 20, 460);
     ctx.fillText('БАЛАНС', 20, 490);
-    ctx.fillText(`${(profile.wallet || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} Синтов`, 20, 515);
+    ctx.fillText(`${(profile.wallet || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`, 20, 515);
     ctx.fillText('ОПЫТ/ЦЕЛЬ', 20, 545);
     ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
