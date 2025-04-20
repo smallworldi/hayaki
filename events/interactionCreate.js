@@ -1,3 +1,4 @@
+
 const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUserProfile, updateUserProfile } = require('../database');
 
@@ -7,14 +8,14 @@ module.exports = {
     if (interaction.customId === 'change_bio') {
       const modal = new ModalBuilder()
         .setCustomId('bio_modal')
-        .setTitle('Alterar sua Biografia');
+        .setTitle('Изменить биографию');
 
       const bioInput = new TextInputBuilder()
         .setCustomId('bio_input')
-        .setLabel('Nova Biografia')
+        .setLabel('Новая биография')
         .setStyle(TextInputStyle.Short)
         .setMaxLength(100)
-        .setPlaceholder('Digite sua nova biografia aqui...')
+        .setPlaceholder('Введите вашу новую биографию здесь...')
         .setRequired(true);
 
       const firstActionRow = new ActionRowBuilder().addComponents(bioInput);
@@ -30,66 +31,65 @@ module.exports = {
 
       await updateUserProfile(interaction.user.id, {
         ...profile,
-        bio: bio
+        bio: bio,
+        background: profile.background
       });
 
-      await interaction.reply({ content: '✅ Bio atualizada com sucesso!', ephemeral: true });
+      await interaction.reply({ content: '✅ Биография успешно обновлена!', ephemeral: true });
       return;
     }
+
     if (!interaction.isButton() && !interaction.isCommand()) return;
 
     if (interaction.isCommand() && interaction.commandName === 'balance') {
       const userProfile = await getUserProfile(interaction.user.id);
-      if (!userProfile) return interaction.reply("Profile not found!");
+      if (!userProfile) return interaction.reply("Профиль не найден!");
 
       const balanceEmbed = new EmbedBuilder()
-        .setTitle('Your Balance')
-        .setDescription(`**Username:** ${interaction.user.username}\n**ID:** ${interaction.user.id}\n**Balance:** ${userProfile.balance}`)
+        .setTitle('Ваш баланс')
+        .setDescription(`**Пользователь:** ${interaction.user.username}\n**ID:** ${interaction.user.id}\n**Баланс:** ${userProfile.balance}`)
         .setColor(0x0099FF);
 
       const row = new ActionRowBuilder()
         .addComponents(
           new ButtonBuilder()
             .setCustomId('back')
-            .setLabel('Back')
+            .setLabel('Назад')
             .setStyle(ButtonStyle.Secondary),
           new ButtonBuilder()
             .setCustomId('send')
-            .setLabel('Send')
+            .setLabel('Отправить')
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId('withdraw')
-            .setLabel('Withdraw')
+            .setLabel('Вывести')
             .setStyle(ButtonStyle.Danger),
           new ButtonBuilder()
             .setCustomId('deposit')
-            .setLabel('Deposit')
+            .setLabel('Пополнить')
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('bank')
-            .setLabel('Bank')
+            .setLabel('Банк')
             .setStyle(ButtonStyle.Primary)
         );
-
 
       await interaction.reply({ embeds: [balanceEmbed], components: [row] });
       return;
     }
-
 
     if (interaction.isButton()) {
       const { getUser, updateUser } = require('../database');
 
       switch (interaction.customId) {
         case 'withdraw':
-          // Create withdraw modal
           const withdrawModal = new ModalBuilder()
             .setCustomId('withdraw_modal')
-            .setTitle('Withdraw Money');
+            .setTitle('Вывести деньги');
 
           const withdrawAmount = new TextInputBuilder()
             .setCustomId('withdraw_amount')
-            .setLabel('Amount to withdraw')
+            .setLabel('Сумма для вывода')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
@@ -101,42 +101,41 @@ module.exports = {
           try {
             const depositModal = new ModalBuilder()
               .setCustomId('deposit_modal')
-              .setTitle('Deposit Money');
+              .setTitle('Пополнить баланс');
 
             const depositAmount = new TextInputBuilder()
               .setCustomId('deposit_amount')
-              .setLabel('Amount to deposit')
+              .setLabel('Сумма для пополнения')
               .setStyle(TextInputStyle.Short)
               .setRequired(true)
-              .setPlaceholder('Enter amount to deposit');
+              .setPlaceholder('Введите сумму для пополнения');
 
             const actionRow = new ActionRowBuilder().addComponents(depositAmount);
             depositModal.addComponents(actionRow);
             await interaction.showModal(depositModal);
           } catch (error) {
-            console.error('Error showing deposit modal:', error);
+            console.error('Ошибка при показе модального окна депозита:', error);
             await interaction.reply({ 
-              content: 'There was an error processing your deposit request. Please try again.',
+              content: 'Произошла ошибка при обработке вашего запроса на пополнение. Пожалуйста, попробуйте снова.',
               ephemeral: true 
             });
           }
           break;
 
         case 'send':
-          // Create send money modal
           const sendModal = new ModalBuilder()
             .setCustomId('send_modal')
-            .setTitle('Send Money');
+            .setTitle('Отправить деньги');
 
           const recipient = new TextInputBuilder()
             .setCustomId('recipient')
-            .setLabel('Recipient ID')
+            .setLabel('ID получателя')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
           const amount = new TextInputBuilder()
             .setCustomId('amount')
-            .setLabel('Amount')
+            .setLabel('Сумма')
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
@@ -146,75 +145,74 @@ module.exports = {
           );
           await interaction.showModal(sendModal);
           break;
-          case 'back':
-            //Handle back button -  replace with actual navigation logic.
-            await interaction.reply({content: 'Returning to main menu...', ephemeral: true});
-            break;
+
+        case 'back':
+          await interaction.reply({content: 'Возвращение в главное меню...', ephemeral: true});
+          break;
+
         case 'bank':
-          //Handle bank button -  This needs database interaction.
-          await interaction.reply({content: 'Updating balance from bank...', ephemeral:true});
+          await interaction.reply({content: 'Обновление баланса из банка...', ephemeral: true});
           break;
       }
     }
 
+    if (!interaction.isButton()) return;
 
-        if (!interaction.isButton()) return;
+    const [action, userId] = interaction.customId.split('_');
+    if (!['approve', 'kick'].includes(action)) return;
 
-        const [action, userId] = interaction.customId.split('_');
-        if (!['approve', 'kick'].includes(action)) return;
+    const member = await interaction.guild.members.fetch(userId).catch(() => null);
+    if (!member) return interaction.reply({ content: 'Пользователь не найден.', ephemeral: true });
 
-        const member = await interaction.guild.members.fetch(userId).catch(() => null);
-        if (!member) return interaction.reply({ content: 'Пользователь не найден.', ephemeral: true });
+    const tempRoleId = '1361193838151991407';
+    const memberRoleId = '1343021729533919434';
 
-        const tempRoleId = '1361193838151991407';
-        const memberRoleId = '1343021729533919434';
+    const updatedEmbed = interaction.message.embeds[0].toJSON();
 
-        const updatedEmbed = interaction.message.embeds[0].toJSON();
+    if (action === 'approve') {
+      try {
+        await member.roles.remove(tempRoleId);
+        await member.roles.add(memberRoleId);
+        await member.timeout(null);
 
-        if (action === 'approve') {
-          try {
-            await member.roles.remove(tempRoleId);
-            await member.roles.add(memberRoleId);
-            await member.timeout(null); // remove timeout
+        updatedEmbed.color = 0x000000;
+        updatedEmbed.title = '✅ Пользователь одобрен';
 
-            updatedEmbed.color = 0x000000;
-            updatedEmbed.title = '✅ Пользователь утверждён';
+        await interaction.update({
+          embeds: [updatedEmbed],
+          components: []
+        });
 
-            await interaction.update({
-              embeds: [updatedEmbed],
-              components: []
-            });
-
-            await interaction.followUp({
-              content: `✅ ${member.user.tag} получил роль участника.`,
-              ephemeral: false
-            });
-          } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Ошибка при утверждении пользователя.', ephemeral: true });
-          }
-        }
-
-        if (action === 'kick') {
-          try {
-            await member.kick('Отказ в доступе: подозрительный аккаунт');
-
-            updatedEmbed.color = 0x000000;
-            updatedEmbed.title = '❌ Пользователь изгнан';
-
-            await interaction.update({
-              embeds: [updatedEmbed],
-              components: []
-            });
-
-            await interaction.followUp({
-              content: `❌ ${member.user.tag} был изгнан с сервера.`,
-              ephemeral: false
-            });
-          } catch (err) {
-            console.error(err);
-            await interaction.reply({ content: 'Ошибка при попытке изгнания.', ephemeral: true });
-          }
-        }
+        await interaction.followUp({
+          content: `✅ ${member.user.tag} получил роль участника.`,
+          ephemeral: false
+        });
+      } catch (err) {
+        console.error(err);
+        await interaction.reply({ content: 'Ошибка при одобрении пользователя.', ephemeral: true });
       }
-    };
+    }
+
+    if (action === 'kick') {
+      try {
+        await member.kick('Отказ в доступе: подозрительный аккаунт');
+
+        updatedEmbed.color = 0x000000;
+        updatedEmbed.title = '❌ Пользователь исключен';
+
+        await interaction.update({
+          embeds: [updatedEmbed],
+          components: []
+        });
+
+        await interaction.followUp({
+          content: `❌ ${member.user.tag} был исключен с сервера.`,
+          ephemeral: false
+        });
+      } catch (err) {
+        console.error(err);
+        await interaction.reply({ content: 'Ошибка при попытке исключения.', ephemeral: true });
+      }
+    }
+  }
+};
