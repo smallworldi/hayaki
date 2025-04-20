@@ -12,7 +12,7 @@ app.get('/botstatus', (req, res) => {
   const uptime = process.uptime();
 
   res.json({
-    status: 'dnd',
+    status: 'Online',
     memory: `${memoryUsage.toFixed(2)} MB`,
     uptime: Math.floor(uptime),
     region: 'yandex (ru-central1)',
