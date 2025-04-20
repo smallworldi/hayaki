@@ -62,7 +62,7 @@ client.voiceTimeTracker = new Map();
 
 client.on('voiceStateUpdate', (oldState, newState) => {
   const userId = newState.member.id;
-  const AFK_CHANNEL = '1359950681427148880';
+  const AFK_CHANNEL = '1363591550742823052';
 
   if (!oldState.channelId && newState.channelId && newState.channelId !== AFK_CHANNEL) {
     // User joined a non-AFK voice channel
@@ -234,7 +234,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 name: channelName,
                 type: 2,
                 userLimit: userLimit,
-                parent: '1359954462680027276',
+                parent: '1363572316809728220',
                 permissionOverwrites: [
                   {
                     id: interaction.user.id,
