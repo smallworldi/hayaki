@@ -1,4 +1,3 @@
-
 const { createCanvas, loadImage } = require('canvas');
 const { UserFlags, UserPremiumType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { getUserFullProfile, getXPLeaderboard } = require('../database');
@@ -103,14 +102,14 @@ module.exports = {
     ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
     // Level badge
-    ctx.fillText('LEVEL', 820, 390);
+    ctx.fillText('УРОВЕНЬ', 820, 390);
     const lvlBuf = createLevelBadge(profile.level || 0, 40);
     const lvlImg = await loadImage(lvlBuf);
     ctx.drawImage(lvlImg, 930, 360, 40, 40);
 
     // XP Leaderboard
     const xpLeaderboard = await getXPLeaderboard(message.guild.id);
-    ctx.fillText('XP RANK', 820, 440);
+    ctx.fillText('РАНГ', 820, 440);
     if (!Array.isArray(xpLeaderboard) || xpLeaderboard.length === 0) {
       ctx.fillText('#Unknown', 820, 465);
     } else {
