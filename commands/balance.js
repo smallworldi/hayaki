@@ -1,5 +1,5 @@
 
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 registerFont('./assets/fonts/NotoSans-Bold.ttf', { family: 'NotoSans' });
 const { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { getUser, updateUser } = require('../database');
