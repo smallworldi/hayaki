@@ -361,7 +361,8 @@ client.on(Events.MessageCreate, async message => {
     if (command.execute) {
       await command.execute(message, args);
     } else if (command.prefixExecute) {
-      await command.prefixExecute(message, args);
+      await command.prefixExecute(message, args, client);
+
     }
   } catch (error) {
     console.error(error);
