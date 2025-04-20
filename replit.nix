@@ -10,5 +10,7 @@
     pkgs.gtk3
     pkgs.libpng
     pkgs.giflib
+    pkgs.fontconfig
+    pkgs.freetype
   ];
 }
