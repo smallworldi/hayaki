@@ -108,7 +108,7 @@ function createLevelBadge(level, size = 40) {
   else if (level <= 500) drawOctagon(ctx, size, gradient); // Octágono entre 400 e 500
   else drawDiamond(ctx, size, gradient); // Losango acima de 500
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = hslaToCss(hue, 80, 60, 0.6);
   ctx.font = `bold ${Math.floor(size / 3)}px Arial`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
