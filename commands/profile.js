@@ -1,4 +1,3 @@
-
 const { createCanvas, loadImage, registerFont } = require('canvas');
 registerFont('./assets/fonts/NotoSans-Bold.ttf', { family: 'NotoSans' });
 const { UserFlags, UserPremiumType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
@@ -28,7 +27,7 @@ module.exports = {
   aliases: ['profile'],
   async execute(message, args) {
     let userMention = args[0] ? message.mentions.users.first() : message.author;
-    if (args[0] && !userMention) return message.reply('Пожалуйста, укажите правильного пользователя!');
+    if (args[0] && !userMention) return message.reply('Please mention a valid user!');
     const user = await message.client.users.fetch(userMention.id, { force: true });
 
     const profile = await getUserFullProfile(user.id);
@@ -64,31 +63,31 @@ module.exports = {
 
       ctx.fillStyle = '#fff';
       ctx.font = '20px "NotoSans"';
-      ctx.fillText(`В браке с: ${partner.username}`, 10, 322);
+      ctx.fillText(`Married to: ${partner.username}`, 10, 322);
     }
 
     ctx.fillStyle = '#fff';
     ctx.font = '22px "NotoSans"';
-    ctx.fillText('ИМЯ', 20, 380);
+    ctx.fillText('NAME', 20, 380);
     ctx.fillText(user.username, 20, 405);
     ctx.fillText('ID', 20, 435);
     ctx.fillText(user.id, 20, 460);
-    ctx.fillText('БАЛАНС', 20, 490);
+    ctx.fillText('BALANCE', 20, 490);
     ctx.fillText(`${(profile.wallet || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`, 20, 515);
-    ctx.fillText('ОПЫТ/ЦЕЛЬ', 20, 545);
+    ctx.fillText('XP/GOAL', 20, 545);
     ctx.fillText(`${profile.xp || 0}/${profile.xp_goal || '???'}`, 20, 570);
 
-    ctx.fillText('УРОВЕНЬ', 820, 390);
+    ctx.fillText('LEVEL', 820, 390);
     const lvlBuf = createLevelBadge(profile.level || 0, 40);
     const lvlImg = await loadImage(lvlBuf);
     ctx.drawImage(lvlImg, 930, 360, 40, 40);
 
     const xpLeaderboard = await getXPLeaderboard(message.guild.id);
-    ctx.fillText('РАНГ', 820, 440);
+    ctx.fillText('RANK', 820, 440);
     const rank = xpLeaderboard.findIndex(e => e.user_id === user.id) + 1;
-    ctx.fillText(`#${rank > 0 ? rank : 'Неизвестно'}`, 820, 465);
+    ctx.fillText(`#${rank > 0 ? rank : 'Unknown'}`, 820, 465);
 
-    ctx.fillText('РЕПУТАЦИЯ', 820, 490);
+    ctx.fillText('REPUTATION', 820, 490);
     ctx.fillText(`${profile.reps || 0}`, 820, 515);
 
     const flags = (await user.fetch(true)).flags;
@@ -124,7 +123,7 @@ module.exports = {
         const badgeImg = await loadImage(imgPath);
         ctx.drawImage(badgeImg, 20 + ctx.measureText(user.username).width + 10 + (i * 35), 380, 25, 25);
       } catch (err) {
-        console.error(`Ошибка загрузки значка ${key}:`, err.message);
+        console.error(`Error loading badge ${key}:`, err.message);
       }
     }
 
@@ -136,13 +135,13 @@ module.exports = {
         const badgeImg = await loadImage(emojiUrl);
         ctx.drawImage(badgeImg, 20 + ctx.measureText(user.username).width + 10 + ((badges.length + i) * 35), 380, 25, 25);
       } catch (err) {
-        console.error(`Ошибка загрузки эмодзи ${emojiId}:`, err.message);
+        console.error(`Error loading emoji ${emojiId}:`, err.message);
       }
     }
 
     ctx.textAlign = 'center';
     ctx.font = 'italic 20px "NotoSans"';
-    const bio = profile.bio || 'У этого пользователя нет биографии.';
+    const bio = profile.bio || 'This user has no biography.';
     const emojiRegex = /<a?:\w+:\d+>/g;
     const cleanBio = bio.replace(emojiRegex, '🔸');
     ctx.fillText(cleanBio, 512, 565);
@@ -156,7 +155,7 @@ module.exports = {
         ctx.drawImage(emojiImg, emojiX, 545, 20, 20);
         emojiX += 20;
       } catch (err) {
-        console.error('Ошибка загрузки эмодзи:', err);
+        console.error('Error loading emoji:', err);
       }
     }
 
@@ -184,7 +183,7 @@ module.exports = {
       ctx.fill();
       ctx.fillStyle = '#fff';
       ctx.font = '20px "NotoSans"';
-      ctx.fillText('Разработчик Hayaki', 910, 282);
+      ctx.fillText('Hayaki Developer', 910, 282);
     } else if (profile.title && profile.titleGradient) {
       const gradient = ctx.createLinearGradient(1024, 0, 724, 0);
       gradient.addColorStop(0, profile.titleGradient.start);
@@ -203,7 +202,7 @@ module.exports = {
     }
 
     const bioButton = new ActionRowBuilder()
-      .addComponents(new ButtonBuilder().setCustomId('change_bio').setLabel('Изменить биографию').setStyle(ButtonStyle.Secondary));
+      .addComponents(new ButtonBuilder().setCustomId('change_bio').setLabel('Edit Bio').setStyle(ButtonStyle.Secondary));
 
     const buffer = canvas.toBuffer();
     return message.channel.send({
