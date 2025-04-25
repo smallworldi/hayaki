@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { getCooldown, setCooldown } = require('../database');
 
-const COOLDOWN_TIME = 5000; // 5 segundos
+const COOLDOWN_TIME = 5000;
 const MIN_BET = 50;
 const MAX_BET = 25000;
 
@@ -12,11 +12,11 @@ module.exports = {
     const userId = message.author.id;
     const now = Date.now();
 
-    // Verificar cooldown
+
     const lastUsed = await getCooldown(userId, 'baccarat');
     if (now - lastUsed < COOLDOWN_TIME) {
       const timeLeft = Math.ceil((COOLDOWN_TIME - (now - lastUsed)) / 1000);
-      return message.reply(`❌ Aguarde ${timeLeft} segundo(s) para jogar novamente.`);
+      return message.reply(`❌ Wait ${timeLeft} second(s) to play again.`);
     }
 
     if (!Array.isArray(args) || args.length < 2) {
@@ -30,7 +30,7 @@ module.exports = {
 
     const amount = parseInt(args[1], 10);
     if (isNaN(amount) || amount < MIN_BET || amount > MAX_BET) {
-      return message.reply(`❌ A aposta deve ser entre ${MIN_BET} e ${MAX_BET} Synths!`);
+      return message.reply(`❌ The bet must be between ${MIN_BET} and ${MAX_BET} ₽!`);
     }
 
 const { getUser, updateUser, getUserProfile, updateUserProfile } = require('../database');
@@ -41,7 +41,7 @@ if (userBalance < amount) {
 
     function drawCard() {
       const value = Math.floor(Math.random() * 13) + 1;
-      return value > 10 ? 0 : value; // 10, J, Q, K = 0
+      return value > 10 ? 0 : value; 
     }
 
     function calculateHand(cards) {
@@ -92,13 +92,13 @@ if (userBalance < amount) {
       .setTitle('Baccarat - Betting in progress...')
       .setColor('#FFFFFF')
       .addFields(
-        { name: 'Your Bet', value: `${bet} - ${amount} Synths`, inline: false },
+        { name: 'Your Bet', value: `${bet} - ${amount} ₽`, inline: false },
         { name: 'Player Cards', value: 'Waiting...', inline: true },
         { name: 'Player Score', value: 'Waiting...', inline: true },
         { name: 'Banker Cards', value: 'Waiting...', inline: true },
         { name: 'Banker Score', value: 'Waiting...', inline: true },
         { name: 'Result', value: 'Waiting...', inline: false },
-        { name: 'New Balance', value: `${userBalance} Synths`, inline: false }
+        { name: 'New Balance', value: `${userBalance} ₽`, inline: false }
       );
 
     const msg = await message.reply({ embeds: [embed] });
@@ -136,7 +136,7 @@ if (userBalance < amount) {
     let playerScore = calculateHand(playerCards);
     let bankerScore = calculateHand(bankerCards);
 
-    // Player draws third card
+
     if (playerScore <= 5) {
       await delay(3000);
       embed.setColor('#FFA500').setTitle('Drawing third card for Player...');
@@ -160,7 +160,7 @@ if (userBalance < amount) {
       await msg.edit({ embeds: [embed] });
     }
 
-    // Banker draws third card
+
     if (bankerScore <= 5 || (bankerScore === 6 && playerScore >= 6)) {
       await delay(3000);
       embed.setColor('#FFA500').setTitle('Drawing third card for Banker...');
@@ -195,7 +195,7 @@ if (userBalance < amount) {
       if (bet === 'banker') winnings = Math.floor(amount * 1.95);
     } else {
       result = 'It\'s a Tie!';
-      winnings = (bet === 'tie') ? amount * 8 : amount; // Tie bet wins 8x, otherwise return the original bet
+      winnings = (bet === 'tie') ? amount * 8 : amount; 
     }
 
     userBalance -= amount;
@@ -204,7 +204,7 @@ if (userBalance < amount) {
       wallet: userBalance
     });
 
-    // Add small XP reward
+  
     const xpGain = Math.floor(Math.random() * 30) + 15;
     const userProfile = await getUserProfile(message.author.id);
     await updateUserProfile(message.author.id, {
@@ -216,11 +216,11 @@ if (userBalance < amount) {
     embed.setTitle('Baccarat - Game Over!')
       .setColor(winnings > amount ? '#454545' : (winnings === amount ? '#FFFFFF' : '#9a46ca'))
       .spliceFields(5, 1, { name: 'Result', value: result, inline: false })
-      .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} Synths`, inline: false });
+      .spliceFields(6, 1, { name: 'New Balance', value: `${userBalance} ₽`, inline: false });
 
     await msg.edit({ embeds: [embed] });
     
-    // Atualizar cooldown após o jogo
+    
     await setCooldown(userId, 'baccarat', now);
   }
 };
