@@ -285,17 +285,6 @@ client.on(Events.MessageCreate, async message => {
   const now = Date.now();
   const content = message.content.toLowerCase();
 
-  const invitesRegex = /(discord\.gg\/|discord\.com\/invite\/)/;
-  const linksRegex = /https?:\/\/|www\./;
-
-  if (invitesRegex.test(content) || linksRegex.test(content)) {
-    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-      await message.delete().catch(() => {});
-      const warn = await message.channel.send(`${message.author}, ссылки запрещены!`);
-      setTimeout(() => warn.delete().catch(() => {}), 3000);
-      return;
-    }
-  }
 
   if (!recentMessages.has(userId)) {
     recentMessages.set(userId, []);
@@ -376,18 +365,5 @@ client.once(Events.ClientReady, () => {
 
 client.login(process.env.TOKEN);
 
-function getLanguageButtons() {
-  const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-  return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('lang_russian')
-      .setLabel('🇷🇺 Русский')
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId('lang_english')
-      .setLabel('🇬🇧 English')
-      .setStyle(ButtonStyle.Secondary)
-  );
-}
 
 require('./server');
