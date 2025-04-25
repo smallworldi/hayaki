@@ -1,8 +1,8 @@
-
 const { createCanvas, loadImage, registerFont } = require('canvas');
 registerFont('./assets/fonts/NotoSans-Bold.ttf', { family: 'NotoSans' });
 const { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { getUser, updateUser } = require('../database');
+
 module.exports = {
   name: 'balance',
   aliases: ['bal'],
@@ -18,17 +18,17 @@ module.exports = {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 400, 200);
 
-    // Get Moscow time for greeting
+    // Moscow time greeting
     const moscowTime = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
     const hour = new Date(moscowTime).getHours();
     
     let greeting;
     if (hour >= 5 && hour < 12) {
-      greeting = 'Доброе утро';
+      greeting = 'Good morning';
     } else if (hour >= 12 && hour < 18) {
-      greeting = 'Добрый день';
+      greeting = 'Good afternoon';
     } else {
-      greeting = 'Добрый вечер';
+      greeting = 'Good evening';
     }
 
     ctx.fillStyle = '#fff';
@@ -39,11 +39,11 @@ module.exports = {
 
     // Balance
     ctx.font = '14px NotoSans';
-    ctx.fillText('Общий Баланс', 20, 85);
+    ctx.fillText('Total Balance', 20, 85);
     ctx.font = 'bold 32px NotoSans';
-    ctx.fillText(`${user.wallet.toLocaleString('ru-RU')} ₽`, 20, 125);
+    ctx.fillText(`${user.wallet.toLocaleString('en-US')} ₽`, 20, 125);
 
-    // Card number style text
+    // Card number style
     ctx.font = '14px NotoSans';
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.fillText(`**** **** ${message.author.id.slice(-4)}`, 20, 155);
@@ -56,12 +56,12 @@ module.exports = {
 
     const msg = await message.reply({ embeds: [embed], files: [attachment] });
 
-    // Add reactions
-    await msg.react('🏦'); // Банк
-    await msg.react('💸'); // Перевод
-    await msg.react('⬆️'); // Снять
-    await msg.react('⬇️'); // Положить
-    await msg.react('⬅️'); // Назад
+    // Reactions
+    await msg.react('🏦'); // Bank
+    await msg.react('💸'); // Transfer
+    await msg.react('⬆️'); // Withdraw
+    await msg.react('⬇️'); // Deposit
+    await msg.react('⬅️'); // Back
 
     const filter = (reaction, user) => {
       return ['⬅️', '🏦', '💸', '⬆️', '⬇️'].includes(reaction.emoji.name) && 
@@ -86,9 +86,9 @@ module.exports = {
             ctx.fillText(user.username, 20, 55);
             
             ctx.font = '14px NotoSans';
-            ctx.fillText('Общий Баланс', 20, 85);
+            ctx.fillText('Total Balance', 20, 85);
             ctx.font = 'bold 32px NotoSans';
-            ctx.fillText(`${userData.wallet.toLocaleString('ru-RU')} ₽`, 20, 125);
+            ctx.fillText(`${userData.wallet.toLocaleString('en-US')} ₽`, 20, 125);
             
             ctx.font = '14px NotoSans';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -98,7 +98,7 @@ module.exports = {
             await msg.edit({ files: [newAttachment] });
             reaction.users.remove(user);
           } catch (error) {
-            console.error('Ошибка при обработке реакции назад:', error);
+            console.error('Error processing back reaction:', error);
           }
           break;
 
@@ -109,14 +109,14 @@ module.exports = {
             
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 16px NotoSans';
-            ctx.fillText('Банковский Баланс', 20, 30);
+            ctx.fillText('Bank Balance', 20, 30);
             ctx.font = 'bold 20px NotoSans';
             ctx.fillText(user.username, 20, 55);
             
             ctx.font = '14px NotoSans';
-            ctx.fillText('Всего в Банке', 20, 85);
+            ctx.fillText('In Bank', 20, 85);
             ctx.font = 'bold 32px NotoSans';
-            ctx.fillText(`${userData?.bank?.toLocaleString('ru-RU')} ₽`, 20, 125);
+            ctx.fillText(`${userData?.bank?.toLocaleString('en-US')} ₽`, 20, 125);
             
             ctx.font = '14px NotoSans';
             ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -126,12 +126,12 @@ module.exports = {
             await msg.edit({ files: [newAttachment] });
             reaction.users.remove(user);
           } catch (error) {
-            console.error('Ошибка при обработке банковской реакции:', error);
+            console.error('Error processing bank reaction:', error);
           }
           break;
 
         case '💸':
-          const idMsg = await message.reply('**Укажите ID пользователя для перевода:**');
+          const idMsg = await message.reply('**Enter the user ID to transfer to:**');
           
           const idFilter = m => m.author.id === user.id;
           const idCollector = message.channel.createMessageCollector({ 
@@ -145,13 +145,13 @@ module.exports = {
             const member = await message.guild.members.fetch(targetId).catch(() => null);
 
             if (!member || member.user.bot || member.id === user.id) {
-              message.reply('Неверный ID пользователя.');
+              message.reply('Invalid user ID.');
               idMsg.delete().catch(() => {});
               idResponse.delete().catch(() => {});
               return;
             }
 
-            const amountMsg = await message.reply('**Какую сумму вы хотите перевести?**');
+            const amountMsg = await message.reply('**Enter the amount you want to transfer:**');
             
             const amountFilter = m => m.author.id === user.id && !isNaN(m.content);
             const amountCollector = message.channel.createMessageCollector({ 
@@ -164,7 +164,7 @@ module.exports = {
               const amount = parseInt(amountResponse.content);
               
               if (isNaN(amount) || amount <= 0) {
-                message.reply('Неверная сумма.');
+                message.reply('Invalid amount.');
                 return;
               }
 
@@ -172,7 +172,7 @@ module.exports = {
               const receiver = await getUser(member.id);
 
               if (sender.wallet < amount) {
-                message.reply('Недостаточно средств.');
+                message.reply('Insufficient funds.');
                 return;
               }
 
@@ -198,18 +198,19 @@ module.exports = {
               ctx.fillStyle = '#fff';
               ctx.font = 'bold 24px NotoSans';
               ctx.textAlign = 'center';
-              ctx.fillText(`${amount.toLocaleString('ru-RU')} ₽`, 200, 140);
+              ctx.fillText(`${amount.toLocaleString('en-US')} ₽`, 200, 140);
               
               ctx.font = '16px NotoSans';
               ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-              ctx.fillText(`СЧЁТ: **** **** ${member.id.slice(-4)}`, 200, 170);
+              ctx.fillText(`ACCOUNT: **** **** ${member.id.slice(-4)}`, 200, 170);
 
               const transferAttachment = new AttachmentBuilder(canvas.toBuffer(), { name: 'transfer.png' });
               const transferEmbed = new EmbedBuilder()
                 .setColor('#4CAF50')
-                .setTitle('Перевод Выполнен')
+                .setTitle('Transfer Complete')
                 .setImage('attachment://transfer.png');
 
+              // Update balance image
               const balanceCanvas = createCanvas(400, 200);
               const balanceCtx = balanceCanvas.getContext('2d');
 
@@ -226,9 +227,9 @@ module.exports = {
               balanceCtx.fillText(message.author.username, 20, 55);
               
               balanceCtx.font = '14px NotoSans';
-              balanceCtx.fillText('Общий Баланс', 20, 85);
+              balanceCtx.fillText('Total Balance', 20, 85);
               balanceCtx.font = 'bold 32px NotoSans';
-              balanceCtx.fillText(`${sender.wallet.toLocaleString('ru-RU')} ₽`, 20, 125);
+              balanceCtx.fillText(`${sender.wallet.toLocaleString('en-US')} ₽`, 20, 125);
               
               balanceCtx.font = '14px NotoSans';
               balanceCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -250,116 +251,6 @@ module.exports = {
               idResponse.delete().catch(() => {});
               amountResponse.delete().catch(() => {});
             });
-          });
-          
-          reaction.users.remove(user);
-          break;
-
-        case '⬆️':
-          const withdrawMsg = await message.reply('**Какую сумму вы хотите снять?**');
-          
-          const withdrawFilter = m => m.author.id === user.id && !isNaN(m.content);
-          const withdrawCollector = message.channel.createMessageCollector({ 
-            filter: withdrawFilter, 
-            time: 30000,
-            max: 1 
-          });
-
-          withdrawCollector.on('collect', async (response) => {
-            const amount = parseInt(response.content);
-            if (amount <= 0 || amount > userData.bank) {
-              message.reply('Неверная сумма или недостаточно средств в банке.');
-            } else {
-              userData.wallet += amount;
-              userData.bank -= amount;
-              await updateUser(user.id, userData);
-              
-              ctx.fillStyle = gradient;
-              ctx.fillRect(0, 0, 400, 200);
-              
-              ctx.fillStyle = '#fff';
-              ctx.font = 'bold 16px NotoSans';
-              ctx.fillText(greeting, 20, 30);
-              ctx.font = 'bold 20px NotoSans';
-              ctx.fillText(user.username, 20, 55);
-              
-              ctx.font = '14px NotoSans';
-              ctx.fillText('Общий Баланс', 20, 85);
-              ctx.font = 'bold 32px NotoSans';
-              ctx.fillText(`${userData.wallet.toLocaleString('ru-RU')} ₽`, 20, 125);
-              
-              ctx.font = '14px NotoSans';
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-              ctx.fillText(`**** **** ${user.id.slice(-4)}`, 20, 155);
-              
-              const newAttachment = new AttachmentBuilder(canvas.toBuffer(), { name: 'balance.png' });
-              await msg.edit({ files: [newAttachment] });
-              
-              message.reply(`Вы сняли ${amount.toLocaleString('ru-RU')} ₽ из банка.`);
-            }
-            await response.delete().catch(() => {});
-            await withdrawMsg.delete().catch(() => {});
-          });
-
-          withdrawCollector.on('end', collected => {
-            if (collected.size === 0) {
-              withdrawMsg.delete().catch(() => {});
-            }
-          });
-          
-          reaction.users.remove(user);
-          break;
-
-        case '⬇️':
-          const depositMsg = await message.reply('**Какую сумму вы хотите положить?**');
-          
-          const depositFilter = m => m.author.id === user.id && !isNaN(m.content);
-          const depositCollector = message.channel.createMessageCollector({ 
-            filter: depositFilter, 
-            time: 30000,
-            max: 1 
-          });
-
-          depositCollector.on('collect', async (response) => {
-            const amount = parseInt(response.content);
-            if (amount <= 0 || amount > userData.wallet) {
-              message.reply('Неверная сумма или недостаточно средств.');
-            } else {
-              userData.wallet -= amount;
-              userData.bank += amount;
-              await updateUser(user.id, userData);
-              
-              ctx.fillStyle = gradient;
-              ctx.fillRect(0, 0, 400, 200);
-              
-              ctx.fillStyle = '#fff';
-              ctx.font = 'bold 16px NotoSans';
-              ctx.fillText(greeting, 20, 30);
-              ctx.font = 'bold 20px NotoSans';
-              ctx.fillText(user.username, 20, 55);
-              
-              ctx.font = '14px NotoSans';
-              ctx.fillText('Общий Баланс', 20, 85);
-              ctx.font = 'bold 32px NotoSans';
-              ctx.fillText(`${userData.wallet.toLocaleString('ru-RU')} ₽`, 20, 125);
-              
-              ctx.font = '14px NotoSans';
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-              ctx.fillText(`**** **** ${user.id.slice(-4)}`, 20, 155);
-              
-              const newAttachment = new AttachmentBuilder(canvas.toBuffer(), { name: 'balance.png' });
-              await msg.edit({ files: [newAttachment] });
-              
-              message.reply(`Вы положили ${amount.toLocaleString('ru-RU')} ₽ в банк.`);
-            }
-            await response.delete().catch(() => {});
-            await depositMsg.delete().catch(() => {});
-          });
-
-          depositCollector.on('end', collected => {
-            if (collected.size === 0) {
-              depositMsg.delete().catch(() => {});
-            }
           });
           
           reaction.users.remove(user);
