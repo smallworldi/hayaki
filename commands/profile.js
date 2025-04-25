@@ -63,7 +63,7 @@ module.exports = {
 
       ctx.fillStyle = '#fff';
       ctx.font = '20px "NotoSans"';
-      ctx.fillText(`Married to: ${partner.username}`, 10, 322);
+      ctx.fillText(`Married: ${partner.username}`, 10, 322);
     }
 
     ctx.fillStyle = '#fff';
